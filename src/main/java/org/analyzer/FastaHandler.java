@@ -32,6 +32,7 @@ public class FastaHandler {
 
                     if (headerCounter != -1) {  // ohne if schachtelung machbar??
                         this.entryList.get(headerCounter).sequence = sequenceHandler;
+                        this.entryList.get(headerCounter).sequenceLength = sequenceHandler.length();
                     }
                     // clear sequenceHandler after every entry discovered
                     sequenceHandler = new StringBuilder();
@@ -43,9 +44,29 @@ public class FastaHandler {
                 }
             }catch (NoSuchElementException e) {
                 this.entryList.get(headerCounter).sequence = sequenceHandler;
+                this.entryList.get(headerCounter).sequenceLength = sequenceHandler.length();
                 return;
             }
         }
+    }
+
+    public void calcMeltingPoint(){
 
     }
+    public void calcMolecularWeight(){
+
+    }
+
+    public void calcGC(){
+
+    }
+
+    public void calcNetCharge(){
+
+    }
+
+    public void translateNucleotides(){
+
+    }
+
 }
