@@ -3,10 +3,15 @@ package org.analyzer;
 import java.util.ArrayList;
 import java.util.List;
 
-public class FastaEntry {
+class FastaEntry {
 
     String seqID;
     StringBuilder sequence;
+    String sequenceType;
+
+    FastaEntry(String type){
+        this.sequenceType = type;
+    }
 
 
 }

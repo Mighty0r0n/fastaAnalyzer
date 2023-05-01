@@ -2,18 +2,31 @@ package org.analyzer;
 
 import java.io.File;
 import java.io.FileNotFoundException;
+
+import org.apache.commons.cli.*;
+
 import java.util.Dictionary;
 import java.util.Hashtable;
 
 // Press Shift twice to open the Search Everywhere dialog and type `show whitespaces`,
 // then press Enter. You can now see whitespace characters in your code.
 public class Main {
-    public static void main(String[] args) throws FileNotFoundException {
+    public static void main(String[] args) throws FileNotFoundException, ParseException {
 
-        FastaHandler test = new FastaHandler();
-        File fasta = new File("/home/daniel/IdeaProjects/FastaAnalyzer/src/main/java/org/analyzer/test.fasta");
+        CommandLineParser parser = new DefaultParser();
 
-        test.parseFasta(fasta);
+        Options options = new Options();
+        options.addOption(Option.builder("i").longOpt("Input-Path").hasArg().build());
+        options.addOption(Option.builder("o").longOpt("Output-Path").hasArg().build());
+        options.addOption(Option.builder("t").longOpt("Sequence-Type").hasArg().build());
+
+        CommandLine line =  parser.parse(options, args);
+
+        FastaHandler handler = new FastaHandler();
+
+        handler.parseFasta(
+                new File(line.getOptionValue("i")),
+                line.getOptionValue("t"));
 
         System.out.println("hallo");
 

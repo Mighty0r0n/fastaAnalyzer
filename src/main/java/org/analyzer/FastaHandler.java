@@ -13,7 +13,7 @@ public class FastaHandler {
 
     List<FastaEntry> entryList = new ArrayList<>();
 
-    public void parseFasta(File fasta) throws FileNotFoundException{
+    public void parseFasta(File fasta, String sequenceType) throws FileNotFoundException{
 
         Scanner fastaReader = new Scanner(fasta);
 
@@ -23,9 +23,10 @@ public class FastaHandler {
         for (;;){
             try {
                 String fastaLine = fastaReader.nextLine();
+
                 if (fastaLine.startsWith(">")){
 
-                    FastaEntry tmpEntry = new FastaEntry();
+                    FastaEntry tmpEntry = new FastaEntry(sequenceType);
                     tmpEntry.seqID = fastaLine;
                     this.entryList.add(tmpEntry);
 
