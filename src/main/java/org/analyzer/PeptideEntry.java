@@ -3,7 +3,7 @@ package org.analyzer;
 import java.util.Dictionary;
 
 
-class FastaEntry {
+class PeptideEntry implements EntryI{
 
     String seqID;
     StringBuilder sequence;
@@ -11,7 +11,7 @@ class FastaEntry {
     int sequenceLength;
     Dictionary alphabetCount;
 
-    FastaEntry(String type){
+    PeptideEntry(String type){
         this.sequenceType = type;
     }
 

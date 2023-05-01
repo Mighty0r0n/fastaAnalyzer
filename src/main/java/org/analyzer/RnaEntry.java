@@ -3,7 +3,7 @@ package org.analyzer;
 import java.util.Dictionary;
 
 
-class FastaEntry {
+class RnaEntry implements EntryI{
 
     String seqID;
     StringBuilder sequence;
@@ -11,7 +11,7 @@ class FastaEntry {
     int sequenceLength;
     Dictionary alphabetCount;
 
-    FastaEntry(String type){
+    RnaEntry(String type){
         this.sequenceType = type;
     }
 

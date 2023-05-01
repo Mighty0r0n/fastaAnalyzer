@@ -25,5 +25,8 @@ public class Main {
 
         System.out.println("hallo");
 
+        FastaEntry test = new FastaEntry("DNA");
+        test.seqID = "Test";
+
     }
 }

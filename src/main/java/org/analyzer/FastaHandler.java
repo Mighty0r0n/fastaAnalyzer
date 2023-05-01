@@ -50,23 +50,6 @@ public class FastaHandler {
         }
     }
 
-    public void calcMeltingPoint(){
 
-    }
-    public void calcMolecularWeight(){
-
-    }
-
-    public void calcGC(){
-
-    }
-
-    public void calcNetCharge(){
-
-    }
-
-    public void translateNucleotides(){
-
-    }
 
 }
