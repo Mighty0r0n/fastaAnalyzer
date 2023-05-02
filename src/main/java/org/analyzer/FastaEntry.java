@@ -41,4 +41,6 @@ abstract class FastaEntry {
     public void setAlphabetCount(Dictionary alphabetCount) {
         this.alphabetCount = alphabetCount;
     }
+
+
 }
