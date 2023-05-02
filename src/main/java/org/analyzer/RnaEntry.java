@@ -3,17 +3,12 @@ package org.analyzer;
 import java.util.Dictionary;
 
 
-class RnaEntry implements EntryI{
+class RnaEntry extends FastaEntry implements EntryI{
 
-    String seqID;
-    StringBuilder sequence;
-    String sequenceType;
-    int sequenceLength;
-    Dictionary alphabetCount;
 
-    RnaEntry(String type){
-        this.sequenceType = type;
-    }
+    static final Dictionary RIBONUCLEOTIDE_DICTIONARY = null;
+    static final Dictionary MOLECULAR_WEIGHTS_RIBONUCLEOTIDE = null;
+    static final Dictionary MELTING_TEMPERATURES_RIBONUCLEOTIDE = null;
 
     public void calcMeltingPoint(){
 

@@ -3,35 +3,42 @@ package org.analyzer;
 import java.util.Dictionary;
 
 
-class FastaEntry {
+abstract class FastaEntry {
 
-    String seqID;
-    StringBuilder sequence;
-    String sequenceType;
-    int sequenceLength;
-    Dictionary alphabetCount;
+    private String seqID;
+    private StringBuilder sequence;
+    private int sequenceLength;
+    private Dictionary alphabetCount;
 
-    FastaEntry(String type){
-        this.sequenceType = type;
+    public String getSeqID() {
+        return seqID;
     }
 
-    public void calcMeltingPoint(){
-
-    }
-    public void calcMolecularWeight(){
-
+    public void setSeqID(String seqID) {
+        this.seqID = seqID;
     }
 
-    public void calcGC(){
-
+    public StringBuilder getSequence() {
+        return sequence;
     }
 
-    public void calcNetCharge(){
-
+    public void setSequence(StringBuilder sequence) {
+        this.sequence = sequence;
     }
 
-    public void translateNucleotides(){
-
+    public int getSequenceLength() {
+        return sequenceLength;
     }
 
+    public void setSequenceLength(int sequenceLength) {
+        this.sequenceLength = sequenceLength;
+    }
+
+    public Dictionary getAlphabetCount() {
+        return alphabetCount;
+    }
+
+    public void setAlphabetCount(Dictionary alphabetCount) {
+        this.alphabetCount = alphabetCount;
+    }
 }

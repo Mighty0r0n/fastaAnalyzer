@@ -3,17 +3,11 @@ package org.analyzer;
 import java.util.Dictionary;
 
 
-class DnaEntry implements EntryI{
+class DnaEntry extends FastaEntry implements EntryI{
 
-    String seqID;
-    StringBuilder sequence;
-    String sequenceType;
-    int sequenceLength;
-    Dictionary alphabetCount;
-
-    DnaEntry(String type){
-        this.sequenceType = type;
-    }
+    static final Dictionary NUCLEOTIDE_DICTIONARY = null;
+    static final Dictionary MOLECULAR_WEIGHTS_NUCLEOTIDES = null;
+    static final Dictionary MELTING_TEMPERATURES_NUCLEOTIDES = null;
 
     public void calcMeltingPoint(){
 

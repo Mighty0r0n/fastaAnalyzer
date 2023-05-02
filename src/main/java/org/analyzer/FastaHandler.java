@@ -18,6 +18,9 @@ public class FastaHandler {
         Scanner fastaReader = new Scanner(fasta);
 
         StringBuilder sequenceHandler = new StringBuilder();
+
+        FastaEntryFactory factory = FastaEntryFactory.getInstance();
+
         int headerCounter = -1;
 
         for (;;){
@@ -26,13 +29,14 @@ public class FastaHandler {
 
                 if (fastaLine.startsWith(">")){
 
-                    FastaEntry tmpEntry = new FastaEntry(sequenceType);
-                    tmpEntry.seqID = fastaLine;
+                    FastaEntry tmpEntry = factory.generateEntryObject(sequenceType);
+
+                    tmpEntry.setSeqID(fastaLine);
                     this.entryList.add(tmpEntry);
 
-                    if (headerCounter != -1) {  // ohne if schachtelung machbar??
-                        this.entryList.get(headerCounter).sequence = sequenceHandler;
-                        this.entryList.get(headerCounter).sequenceLength = sequenceHandler.length();
+                    if (headerCounter != -1) {
+                        this.entryList.get(headerCounter).setSequence(sequenceHandler);
+                        this.entryList.get(headerCounter).setSequenceLength(sequenceHandler.length());
                     }
                     // clear sequenceHandler after every entry discovered
                     sequenceHandler = new StringBuilder();
@@ -43,13 +47,16 @@ public class FastaHandler {
                     sequenceHandler.append(fastaLine);
                 }
             }catch (NoSuchElementException e) {
-                this.entryList.get(headerCounter).sequence = sequenceHandler;
-                this.entryList.get(headerCounter).sequenceLength = sequenceHandler.length();
+                this.entryList.get(headerCounter).setSequence(sequenceHandler);
+                this.entryList.get(headerCounter).setSequenceLength(sequenceHandler.length());
                 return;
             }
         }
     }
 
+    public void generateOutputFiles(String OutputPath){
+
+    }
 
 
 }

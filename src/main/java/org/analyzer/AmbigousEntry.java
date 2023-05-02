@@ -3,17 +3,12 @@ package org.analyzer;
 import java.util.Dictionary;
 
 
-class AmbigousEntry {
+class AmbigousEntry extends FastaEntry implements EntryI{
 
-    String seqID;
-    StringBuilder sequence;
-    String sequenceType;
-    int sequenceLength;
-    Dictionary alphabetCount;
 
-    AmbigousEntry(String type){
-        this.sequenceType = type;
-    }
+    static final Dictionary AMBIGOUS_DICTIONARY = null;
+    static final Dictionary MOLECULAR_WEIGHTS_AMBIGOUS = null;
+    static final Dictionary MELTING_TEMPERATURES_AMBIGOUS = null;
 
     public void calcMeltingPoint(){
 

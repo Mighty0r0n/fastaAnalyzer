@@ -3,17 +3,11 @@ package org.analyzer;
 import java.util.Dictionary;
 
 
-class PeptideEntry implements EntryI{
+class PeptideEntry extends FastaEntry implements EntryI{
 
-    String seqID;
-    StringBuilder sequence;
-    String sequenceType;
-    int sequenceLength;
-    Dictionary alphabetCount;
-
-    PeptideEntry(String type){
-        this.sequenceType = type;
-    }
+    static final Dictionary PEPTIDE_DICTIONARY = null;
+    static final Dictionary MOLECULAR_WEIGHTS_PEPTIDES = null;
+    static final Dictionary MELTING_TEMPERATURES_PEPTIDES = null;
 
     public void calcMeltingPoint(){
 
