@@ -1,10 +1,8 @@
 package org.analyzer;
-
-import java.util.Dictionary;
-
+/**
+ * Interface for provided methods for abstract class FastaEntry subclasses
+ */
 interface EntryI {
-
-
     void calcMeltingPoint();
     void calcMolecularWeight();
     void calcGC();

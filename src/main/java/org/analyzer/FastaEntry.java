@@ -1,10 +1,10 @@
 package org.analyzer;
 
 import java.util.Dictionary;
-
-
+/**
+ * Abstract Class, to specify the needed fields for the subclasses.
+ */
 abstract class FastaEntry {
-
     private String seqID;
     private StringBuilder sequence;
     private int sequenceLength;

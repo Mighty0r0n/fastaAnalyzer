@@ -1,15 +1,20 @@
 package org.analyzer;
 
+/**
+ * Factoryclass for FastaEntry objects
+ */
 class FastaEntryFactory {
-
     private static FastaEntryFactory instance;
-
+    /**
+     * singleton method, for ensuring that only 1 instance of this instance is running.
+     *
+     * @return instance returnes the existing object instance.
+     */
     public static FastaEntryFactory getInstance(){
         if (instance == null){
             instance = new FastaEntryFactory();
         }return instance;
     }
-
     FastaEntry generateEntryObject(String sequenceType){
 
         FastaEntry fastaEntry = null;
