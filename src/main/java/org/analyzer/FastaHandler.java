@@ -8,7 +8,6 @@ import java.util.NoSuchElementException;
 import java.util.Scanner;
 import java.lang.StringBuilder;
 
-
 public class FastaHandler {
 
     List<FastaEntry> entryList = new ArrayList<>();

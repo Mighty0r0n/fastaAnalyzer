@@ -10,8 +10,6 @@ class FastaEntryFactory {
         }return instance;
     }
 
-
-
     FastaEntry generateEntryObject(String sequenceType){
 
         FastaEntry fastaEntry = null;

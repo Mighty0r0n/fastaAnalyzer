@@ -22,5 +22,7 @@ public class Main {
         handler.parseFasta(
                 new File(line.getOptionValue("i")),
                 line.getOptionValue("t"));
+
+        System.out.println("hallo");
     }
 }
