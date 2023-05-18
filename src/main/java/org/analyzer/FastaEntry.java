@@ -108,7 +108,8 @@ abstract class FastaEntry implements EntryI {
             default -> System.out.println("seqType = " + seqType + "not valid");
 
         }
-
+    }
+    public void calcNetCharge(){
     }
 
 
