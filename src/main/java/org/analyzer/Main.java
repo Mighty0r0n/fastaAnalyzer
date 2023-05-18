@@ -31,12 +31,12 @@ public class Main {
 
         CommandLine line =  parser.parse(options, args);
 
-        FastaHandler handler = new FastaHandler();
+        FastaHandler handler = FastaHandler.getInstance();
 
         handler.parseFasta(
                 new File(line.getOptionValue("i")),
                 line.getOptionValue("t"));
-
-        System.out.println("hallo");
+        handler.entryList.get(0).calcGC();
+        System.out.println("Programm ist fertig gelaufen. YIPPIE!");
     }
 }
