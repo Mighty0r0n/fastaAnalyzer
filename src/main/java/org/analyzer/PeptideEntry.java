@@ -26,10 +26,10 @@ class PeptideEntry extends FastaEntry {
     /**
      * For calculating the GC enrichment in the sequence
      */
-    @Override
-    public void calcGC(){
-
-    }
+//    @Override
+//    public void calcGC(){
+//
+//    }
     /**
      * For calculating the Net Charge of the sequence
      */

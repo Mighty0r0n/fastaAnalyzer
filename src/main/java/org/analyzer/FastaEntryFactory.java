@@ -15,17 +15,17 @@ class FastaEntryFactory {
             instance = new FastaEntryFactory();
         }return instance;
     }
-    FastaEntry generateEntryObject(String sequenceType){
+    FastaEntry generateEntryObject(SequenceType sequenceType){
 
         FastaEntry fastaEntry = null;
 
-        if (sequenceType.equalsIgnoreCase("DNA")){
+        if (sequenceType == SequenceType.DNA){
             fastaEntry = new DnaEntry();
-        } else if (sequenceType.equalsIgnoreCase("RNA")) {
+        } else if (sequenceType == SequenceType.RNA) {
             fastaEntry = new RnaEntry();
-        } else if (sequenceType.equalsIgnoreCase("PEPTIDE")) {
+        } else if (sequenceType == SequenceType.PEPTIDE) {
             fastaEntry = new PeptideEntry();
-        } else if (sequenceType.equalsIgnoreCase("AMBIGOUS")) {
+        } else if (sequenceType == SequenceType.AMBIGOUS) {
             fastaEntry = new AmbigousEntry();
         }
         return fastaEntry;

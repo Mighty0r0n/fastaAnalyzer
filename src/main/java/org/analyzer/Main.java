@@ -15,10 +15,9 @@ import org.apache.commons.cli.*;
 
 public class Main {
     /**
-     *
      * @param args arguments given to the main from the CLI, these getting parsed by commons-cli
      * @throws FileNotFoundException incorrect filepath
-     * @throws ParseException incorrect CLI param statements
+     * @throws ParseException        incorrect CLI param statements
      */
     public static void main(String[] args) throws FileNotFoundException, ParseException {
 
@@ -29,14 +28,18 @@ public class Main {
         options.addOption(Option.builder("o").longOpt("Output-Path").hasArg().build());
         options.addOption(Option.builder("t").longOpt("Sequence-Type").hasArg().build());
 
-        CommandLine line =  parser.parse(options, args);
+        CommandLine line = parser.parse(options, args);
+
+        SequenceType seqType = SequenceType.valueOf(line.getOptionValue("t").toUpperCase());
 
         FastaHandler handler = FastaHandler.getInstance();
 
         handler.parseFasta(
                 new File(line.getOptionValue("i")),
-                line.getOptionValue("t"));
-        handler.entryList.get(0).calcGC();
+                seqType);
+        handler.entryList.get(0).calcGC(seqType);
+        handler.entryList.get(0).calcMolecularWeight(seqType);
+        //handler.entryList.get(0).calcGCtest();
         System.out.println("Programm ist fertig gelaufen. YIPPIE!");
     }
 }

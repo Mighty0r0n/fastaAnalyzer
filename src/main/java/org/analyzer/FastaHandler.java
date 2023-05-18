@@ -30,7 +30,7 @@ public class FastaHandler {
      * @throws FileNotFoundException Path of the input file is incorrect
      *
      */
-    public void parseFasta(File fasta, String sequenceType) throws FileNotFoundException{
+    public void parseFasta(File fasta, SequenceType sequenceType) throws FileNotFoundException{
 
         // Creating necessary objects for parsing
         Scanner fastaReader = new Scanner(fasta);

@@ -12,7 +12,7 @@ class DnaEntry extends FastaEntry {
     static final Dictionary MOLECULAR_WEIGHTS_NUCLEOTIDES = null;
     static final Dictionary MELTING_TEMPERATURES_NUCLEOTIDES = null;
 
-    public void calcGC(){
+    public void calcGCtest() {
 
         double gc_enrichment = (this.getAlphabetCount().get('G') + this.getAlphabetCount().get('C')) /
                 (this.getAlphabetCount().get('A') +
@@ -28,14 +28,15 @@ class DnaEntry extends FastaEntry {
      * For calculating Melting Point of the sequence
      */
     @Override
-    public void calcMeltingPoint(){
+    public void calcMeltingPoint() {
 
     }
+
     /**
      * For calculating the Molecular weight of the sequence
      */
     @Override
-    public void calcMolecularWeight(){
+    public void calcMolecularWeight() {
 
     }
     /**
@@ -47,14 +48,15 @@ class DnaEntry extends FastaEntry {
      * For calculating the Net Charge of the sequence
      */
     @Override
-    public void calcNetCharge(){
+    public void calcNetCharge() {
 
     }
+
     /**
      * For translating the sequence into another type of sequence
      */
     @Override
-    public void translateNucleotides(){
+    public void translateNucleotides() {
 
     }
 }
