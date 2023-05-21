@@ -32,14 +32,12 @@ public class Main {
 
         SequenceType seqType = SequenceType.valueOf(line.getOptionValue("t").toUpperCase());
 
-        FastaHandler handler = FastaHandler.getInstance();
+
+        FastaHandler handler = FastaHandler.getInstance(seqType);
 
         handler.parseFasta(
-                new File(line.getOptionValue("i")),
-                seqType);
-        handler.entryList.get(0).calcGC(seqType);
-        handler.entryList.get(0).calcMolecularWeight(seqType);
-        //handler.entryList.get(0).calcGCtest();
+                new File(line.getOptionValue("i")));
+
         System.out.println("Programm ist fertig gelaufen. YIPPIE!");
     }
 }

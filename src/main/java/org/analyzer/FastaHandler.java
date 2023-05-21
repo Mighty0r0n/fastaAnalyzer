@@ -12,12 +12,17 @@ import java.lang.StringBuilder;
  */
 public class FastaHandler {
     private static FastaHandler instance;
+    private final SequenceType sequenceType;
     List<FastaEntry> entryList = new ArrayList<>();
 
+    public FastaHandler(SequenceType type){
+        this.sequenceType = type;
 
-    public static FastaHandler getInstance(){
+    }
+
+    public static FastaHandler getInstance(SequenceType sType){
         if (instance == null){
-            instance = new FastaHandler();
+            instance = new FastaHandler(sType);
         }return instance;
     }
 
@@ -26,16 +31,15 @@ public class FastaHandler {
      * calculations.
      *
      * @param fasta The choosen fasta input file
-     * @param sequenceType [RNA, DNA, PEPTIDE, AMBIGOUS] The type the input sequence is.
      * @throws FileNotFoundException Path of the input file is incorrect
      *
      */
-    public void parseFasta(File fasta, SequenceType sequenceType) throws FileNotFoundException{
+    public void parseFasta(File fasta) throws FileNotFoundException{
 
         // Creating necessary objects for parsing
         Scanner fastaReader = new Scanner(fasta);
         StringBuilder sequenceHandler = new StringBuilder();
-        FastaEntryFactory factory = FastaEntryFactory.getInstance();
+
         int headerCounter = -1;
 
         // main parsing logic. Object is creating when header line is found and is filled line by line with
@@ -48,7 +52,8 @@ public class FastaHandler {
 
                     // tmp object is created here and saved in entryList. The object gets destroyed if logically
                     // new object is found for creating in the file.
-                    FastaEntry tmpEntry = factory.generateEntryObject(sequenceType);
+
+                    FastaEntry tmpEntry = new FastaEntry();
                     tmpEntry.setSeqID(fastaLine);
                     this.entryList.add(tmpEntry);
 
@@ -59,6 +64,7 @@ public class FastaHandler {
                     sequenceHandler = new StringBuilder();
                     headerCounter++;
                 } else if (fastaLine.startsWith(";")) {
+                    System.out.println("Fasta contains commentlines, this parser is ignoring them.");
                 } else {
                     sequenceHandler.append(fastaLine);
 
@@ -81,5 +87,9 @@ public class FastaHandler {
      */
     public void generateOutputFiles(String OutputPath, String param){
 
+        this.entryList.get(0).calcGC(this.sequenceType);
+        this.entryList.get(0).calcMolecularWeight(this.sequenceType);
+
+        this.entryList.get(0).calcNetCharge(this.sequenceType);
     }
 }
