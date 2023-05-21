@@ -1,7 +1,4 @@
->sequence A
-ggtaagtcctctagtacaaacacccccaatattgtgatataattaaaattatattcatat
-tctgttgccagaaaaaacacttttaggctatattagagccatcttctttgaagcgttgtc
->sequence B
-ggtaagtgctctagtacaaacacccccaatattgtgatataattaaaattatattcatat
-tctgttgccagattttacacttttaggctatattagagccatcttctttgaagcgttgtc
-tatgcatcgatcgacgactg
+>seq0
+AUGCGCGCGCGCGCGC
+>seq1
+AUGCGCGUAC

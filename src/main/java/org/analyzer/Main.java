@@ -35,8 +35,8 @@ public class Main {
 
         FastaHandler handler = FastaHandler.getInstance(seqType);
 
-        handler.parseFasta(
-                new File(line.getOptionValue("i")));
+        handler.parseFasta(new File(line.getOptionValue("i")));
+        handler.generateOutputFiles(line.getOptionValue("o"));
 
         System.out.println("Programm ist fertig gelaufen. YIPPIE!");
     }

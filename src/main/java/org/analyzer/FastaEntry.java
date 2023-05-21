@@ -1,151 +1,178 @@
 package org.analyzer;
 
-
 import java.util.HashMap;
 import java.util.Map;
 
 /**
- * Abstract Class, to specify the needed fields for the subclasses.
+ * Class that represents one fasta entry and is able to generate metadata depending on the given input sequence.
  */
 class FastaEntry implements EntryI {
-    /*
-     Klassenfelder
-     */
-    private String seqID;
+    private final String seqID;
     private String sequence;
     private int sequenceLength;
-    private Map<Character, Double> alphabetCount = new HashMap<>();
+    private final Map<Character, Double> alphabetCount = new HashMap<>();
     private double molecularWeight;
     private double gcEnrichment;
     private double meltingPoint;
     private double netCharge;
-    /*
-        Methoden
-    */
-    void buildClass(String sequenceHandler) {
-        this.setSequence(sequenceHandler);
-        this.setSequenceLength(sequenceHandler.length());
-        this.calcAlphabet(this);
-    }
-    void calcGC(SequenceType seqType) {
 
+    FastaEntry(String seqID) {
+        this.seqID = seqID;
+    }
+
+    /**
+     * Calculates the Metadata for the provided Sequence Input and saves them into class fields
+     *
+     * @param sequenceHandler input sequence
+     * @param seqType         enum for sequence type
+     */
+    void settingSequenceProperties(String sequenceHandler, SequenceType seqType) {
+        this.sequence = sequenceHandler;
+        this.sequenceLength = sequenceHandler.length();
+        this.calcAlphabet();
+        this.calcGC(seqType);
+        this.calcMolecularWeight(seqType);
+        this.calcMeltingPoint(seqType);
+        this.calcNetCharge(seqType);
+    }
+
+    /**
+     * Calculates the occurance of a character in a given sequence and saves it into the class field alphabetCount.
+     */
+    @Override
+    public void calcAlphabet() {
+        this.sequence.chars()
+                .mapToObj(c -> (char) c)
+                .forEach(c -> this.alphabetCount.merge(c, 1.0, Double::sum));
+    }
+
+    /**
+     * Calculates the GC Enrichment of the Input Sequence, if given a nucleoacid type sequence.
+     *
+     * @param seqType enum for sequence type
+     */
+    @Override
+    public void calcGC(SequenceType seqType) {
         switch (seqType) {
-            case PEPTIDE, AMBIGOUS ->
+            case PEPTIDE, AMBIGUOUS ->
                     System.out.println("seqType = " + seqType + "; Not Compatible for GC enrichment analysis");
-            case DNA, RNA ->
-                    this.setGcEnrichment((this.getAlphabetCount().get('G') + this.getAlphabetCount().get('C')) /
-                            (this.getSequenceLength()));
+            case DNA, RNA -> this.gcEnrichment = seqType.gcEnrichment(
+                    this.sequenceLength,
+                    this.alphabetCount.get('G'),
+                    this.alphabetCount.get('C')
+            );
             default -> System.out.println("seqType = " + seqType + "not valid");
         }
     }
     // To-DO Setter usage not needed. Should they be public usble??
-    void calcMolecularWeight(SequenceType seqType) {
-        switch (seqType) {
-            case PEPTIDE, AMBIGOUS ->
-                    System.out.println("seqType = " + seqType + "; Not Compatible for GC enrichment analysis");
-            case DNA -> this.setMolecularWeight(this.getAlphabetCount().get('A') * seqType.getMolecularWeights().get('A') +
-                    this.getAlphabetCount().get('C') * seqType.getMolecularWeights().get('C') +
-                    this.getAlphabetCount().get('G') * seqType.getMolecularWeights().get('G') +
-                    this.getAlphabetCount().get('T') * seqType.getMolecularWeights().get('T') -
-                    61.96);
-            case RNA -> this.setMolecularWeight(this.getAlphabetCount().get('A') * seqType.getMolecularWeights().get('A') +
-                    this.getAlphabetCount().get('C') * seqType.getMolecularWeights().get('C') +
-                    this.getAlphabetCount().get('G') * seqType.getMolecularWeights().get('G') +
-                    this.getAlphabetCount().get('U') * seqType.getMolecularWeights().get('U') +
-                    159);
-            default -> System.out.println("seqType = " + seqType + "not valid");
 
+    /**
+     * Calculates the molecular weight of the given input siquence, if given a nucleoacid sequence type.
+     *
+     * @param seqType enum for sequence type
+     */
+    @Override
+    public void calcMolecularWeight(SequenceType seqType) {
+        switch (seqType) {
+            case PEPTIDE, AMBIGUOUS ->
+                    System.out.println("seqType = " + seqType + "; Not Compatible for Molecular Weight analysis");
+            case DNA -> this.molecularWeight = seqType.molecularWeight(
+                    this.alphabetCount.get('A'),
+                    this.alphabetCount.get('C'),
+                    this.alphabetCount.get('G'),
+                    this.alphabetCount.get('T'),
+                    61.96
+            );
+            case RNA -> this.molecularWeight = seqType.molecularWeight(
+                    this.alphabetCount.get('A'),
+                    this.alphabetCount.get('C'),
+                    this.alphabetCount.get('G'),
+                    this.alphabetCount.get('U'),
+                    159.00
+            );
+            default -> System.out.println("seqType = " + seqType + "not valid");
         }
     }
+
+    /**
+     * Calculate the melting point of the input sequence, if given a nucleoacid sequence type.
+     *
+     * @param seqType enum for sequence type
+     */
+    @Override
     public void calcMeltingPoint(SequenceType seqType) {
         switch (seqType) {
-            case PEPTIDE, AMBIGOUS ->
+            case PEPTIDE, AMBIGUOUS ->
                     System.out.println("seqType = " + seqType + "; Not Compatible for Melting Point analysis");
-            case DNA, RNA -> {
-                if (this.sequenceLength < 14) {
-                    this.meltingPoint = (this.alphabetCount.get('A') + this.alphabetCount.get('T')) * 2
-                            + (this.alphabetCount.get('G') + this.alphabetCount.get('C') * 4);
-                } else {
-                    this.meltingPoint = 64.9 + (41 * (this.alphabetCount.get('G') +
-                            this.alphabetCount.get('C') - 16.4) / this.sequenceLength);
-                }
-            }
+            case DNA -> this.meltingPoint = seqType.meltingPoint(
+                    this.sequenceLength,
+                    this.alphabetCount.get('A'),
+                    this.alphabetCount.get('C'),
+                    this.alphabetCount.get('G'),
+                    this.alphabetCount.get('T')
+            );
+            case RNA -> this.meltingPoint = seqType.meltingPoint(
+                    this.sequenceLength,
+                    this.alphabetCount.get('A'),
+                    this.alphabetCount.get('C'),
+                    this.alphabetCount.get('G'),
+                    this.alphabetCount.get('U')
+            );
             default -> System.out.println("seqType = " + seqType + "not valid");
-
         }
     }
+
+    /**
+     * Calculates the net charge of the input sequence, if given a peptide type sequence
+     *
+     * @param seqType enum for sequence type
+     */
+    @Override
     public void calcNetCharge(SequenceType seqType) {
         switch (seqType) {
-            case DNA, RNA, AMBIGOUS ->
+            case DNA, RNA, AMBIGUOUS ->
                     System.out.println("seqType = " + seqType + "; Not Compatible for NetCharge analysis");
-            case PEPTIDE -> System.out.println("HALLO");
+            case PEPTIDE -> this.netCharge = seqType.netCharge(this.alphabetCount);
             default -> System.out.println("seqType = " + seqType + "not valid");
         }
     }
-    /*
-    Getter/Setter
-     */
-    public String getSeqID() {
-        return seqID;
-    }
 
-    public void setSeqID(String seqID) {
-        this.seqID = seqID;
-    }
-
-    public String getSequence() {
-        return sequence;
-    }
-
-    public void setSequence(String sequence) {
-        this.sequence = sequence;
-    }
-
-    public int getSequenceLength() {
-        return sequenceLength;
-    }
-
-    public void setSequenceLength(int sequenceLength) {
-        this.sequenceLength = sequenceLength;
-    }
-
+    @Override
     public Map<Character, Double> getAlphabetCount() {
-        return alphabetCount;
-    }
-
-    public void setAlphabetCount(Map<Character, Double> alphabetCount) {
-        this.alphabetCount = alphabetCount;
+        return this.alphabetCount;
     }
 
     public double getGcEnrichment() {
         return gcEnrichment;
     }
 
-    public void setGcEnrichment(double gcEnrichment) {
-        this.gcEnrichment = gcEnrichment;
-    }
-
+    @Override
     public double getMolecularWeight() {
-        return molecularWeight;
+        return this.molecularWeight;
     }
 
-    public void setMolecularWeight(double molecularWeight) {
-        this.molecularWeight = molecularWeight;
-    }
-
+    @Override
     public double getMeltingPoint() {
-        return meltingPoint;
+        return this.meltingPoint;
     }
 
-    public void setMeltingPoint(double meltingPoint) {
-        this.meltingPoint = meltingPoint;
-    }
-
+    @Override
     public double getNetCharge() {
-        return netCharge;
+        return this.netCharge;
     }
 
-    public void setNetCharge(double netCharge) {
-        this.netCharge = netCharge;
+    @Override
+    public String getSeqID() {
+        return seqID;
+    }
+
+    @Override
+    public String getSequence() {
+        return sequence;
+    }
+
+    @Override
+    public int getSequenceLength() {
+        return sequenceLength;
     }
 }

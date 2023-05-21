@@ -2,22 +2,20 @@ package org.analyzer;
 
 import java.util.HashMap;
 import java.util.Map;
+
+/**
+ * Enum class for setting the sequence type, needed for the calculations in this package. It provides additional
+ * calculation methods for metadata.
+ */
 public enum SequenceType {
     DNA(createDNAMap()),
     RNA(createRNAMap()),
     PEPTIDE(createPeptideMap()),
-    AMBIGOUS(createAmbigousMap());
-
+    AMBIGUOUS(createAmbiguousMap());
     private final Map<Character, Double> molecularWeights;
-
     SequenceType(Map<Character, Double> molecularWeights) {
         this.molecularWeights = molecularWeights;
     }
-
-    public Map<Character, Double> getMolecularWeights() {
-        return molecularWeights;
-    }
-
     private static Map<Character, Double> createDNAMap(){
         Map<Character, Double> dnaMap = new HashMap<>();
         dnaMap.put('A', 313.21);
@@ -26,7 +24,6 @@ public enum SequenceType {
         dnaMap.put('T', 304.20);
         return dnaMap;
     }
-
     private static Map<Character, Double> createRNAMap(){
         Map<Character, Double> rnaMap = new HashMap<>();
         rnaMap.put('A', 329.2);
@@ -50,11 +47,64 @@ public enum SequenceType {
         return peptideMap;
     }
 
-    private static Map<Character, Double> createAmbigousMap(){
+    private static Map<Character, Double> createAmbiguousMap(){
         Map<Character, Double> ambigousMap = new HashMap<>();
         return ambigousMap;
     }
 
+    double gcEnrichment(int sequenceLength, Double cCount, Double gCount) {
+        return (gCount + cCount) / sequenceLength;
+    }
 
+    double molecularWeight(Double aCount, Double cCount, Double gCount, Double utCount, Double seqModifier){
+        return aCount * this.molecularWeights.get('A') +
+                cCount * this.molecularWeights.get('C') +
+                gCount * this.molecularWeights.get('G') +
+                utCount * this.molecularWeights.get((this == SequenceType.DNA) ? 'T':'U') -
+                seqModifier;
+    }
 
+    double meltingPoint(int seqLength, Double aCount, Double cCount, Double gCount, Double utCount){
+        double meltingPoint;
+        if (seqLength < 14) {
+            meltingPoint = (aCount + utCount) * 2 + (gCount + cCount) * 4;
+        } else {
+            meltingPoint = 64.9 + ((41 * (gCount+cCount-16.4)) / seqLength );
+        }
+
+        return meltingPoint;
+    }
+
+    double netChargeFractionNTerm(Character aminoAcid, Map<Character, Double> peptideCount) {
+        return ((peptideCount.get(aminoAcid) != null) ? peptideCount.get(aminoAcid) *
+                ((Math.pow(10, this.molecularWeights.get(aminoAcid))) /
+                        (Math.pow(10, 7) + Math.pow(10, this.molecularWeights.get(aminoAcid))))  : 0.0);
+    }
+
+    double netChargeFractionCTerm(Character aminoAcid, Map<Character, Double> peptideCount) {
+        return ((peptideCount.get(aminoAcid) != null) ? peptideCount.get(aminoAcid) *
+                ((Math.pow(10, 7)) /
+                        (Math.pow(10, 7) + Math.pow(10, this.molecularWeights.get(aminoAcid))))  : 0.0);
+    }
+
+    double netCharge(Map<Character, Double> peptideCount) {
+        Character[] nTermAminoAcids = {'+', 'R', 'K', 'H'};
+        Character[] cTermAminoAcids = {'-', 'D', 'E', 'C', 'Y'};
+        Map<Character, Double> termini = new HashMap<>();
+        termini.put('+', 1.0);
+        termini.put('-', 1.0);
+
+        double nTermSum = this.netChargeFractionNTerm('+', termini);
+
+        for (Character amino: nTermAminoAcids){
+            nTermSum += this.netChargeFractionNTerm(amino, peptideCount);
+        }
+
+        double cTermSum = this.netChargeFractionCTerm('-', termini);
+
+        for (Character amino: cTermAminoAcids){
+            cTermSum += this.netChargeFractionCTerm(amino, peptideCount);
+        }
+        return nTermSum - cTermSum;
+    }
 }

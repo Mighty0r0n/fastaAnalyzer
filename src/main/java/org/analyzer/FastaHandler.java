@@ -1,9 +1,8 @@
 package org.analyzer;
 
-import java.io.File;
+import java.io.*;
 import java.util.ArrayList;
 import java.util.List;
-import java.io.FileNotFoundException;
 import java.util.NoSuchElementException;
 import java.util.Scanner;
 import java.lang.StringBuilder;
@@ -20,6 +19,12 @@ public class FastaHandler {
 
     }
 
+    /**
+     * Invoke for singleton
+     *
+     * @param sType enum of sequnce type
+     * @return instance of the class
+     */
     public static FastaHandler getInstance(SequenceType sType){
         if (instance == null){
             instance = new FastaHandler(sType);
@@ -53,12 +58,11 @@ public class FastaHandler {
                     // tmp object is created here and saved in entryList. The object gets destroyed if logically
                     // new object is found for creating in the file.
 
-                    FastaEntry tmpEntry = new FastaEntry();
-                    tmpEntry.setSeqID(fastaLine);
+                    FastaEntry tmpEntry = new FastaEntry(fastaLine);
                     this.entryList.add(tmpEntry);
 
                     if (headerCounter != -1) {
-                        this.entryList.get(headerCounter).buildClass(sequenceHandler.toString());
+                        this.entryList.get(headerCounter).settingSequenceProperties(sequenceHandler.toString(), this.sequenceType);
                     }
                     // clear sequenceHandler after every entry discovered and update headerCounter
                     sequenceHandler = new StringBuilder();
@@ -71,25 +75,37 @@ public class FastaHandler {
                 }
             }catch (NoSuchElementException e) {
                 // Needed for adding last entry information to the object with above logic. TO-DO Fix Counter logic, to apply buildClass here!
-                this.entryList.get(headerCounter).buildClass(sequenceHandler.toString());
-//                this.entryList.get(headerCounter).setSequence(sequenceHandler.toString());
-//                this.entryList.get(headerCounter).setSequenceLength(sequenceHandler.length());
-//                this.entryList.get(headerCounter).calcAlphabet(this.entryList.get(headerCounter));
+                this.entryList.get(headerCounter).settingSequenceProperties(sequenceHandler.toString(), this.sequenceType);
                 return;
             }
+
         }
     }
     /**
      * Method for generating the output Files. Calculations are done from other classes and are gathered here.
+     * 0 values are sorted out
      *
-     * @param OutputPath specifies the path where to place the outputfile
-     * @param param the param for the calculations. !TBA!
+     * @param outputPath specifies the path where to place the outputfile
      */
-    public void generateOutputFiles(String OutputPath, String param){
-
-        this.entryList.get(0).calcGC(this.sequenceType);
-        this.entryList.get(0).calcMolecularWeight(this.sequenceType);
-
-        this.entryList.get(0).calcNetCharge(this.sequenceType);
+    public void generateOutputFiles(String outputPath){
+        try (BufferedWriter writer = new BufferedWriter(new FileWriter(outputPath))) {
+            for (FastaEntry entry : this.entryList) {
+                writer.write("Sequence ID: " + entry.getSeqID());
+                writer.newLine();
+                writer.write("Sequence Length: " + entry.getSequenceLength() + ";");
+                if (entry.getMolecularWeight() != 0.0) {
+                    writer.write("Molecular Weight: " + String.format("%.2f", entry.getMolecularWeight()) + "g/mole;");
+                } if (entry.getMeltingPoint() != 0.0) {
+                    writer.write("Melting Point: " + String.format("%.2f", entry.getMeltingPoint()) + "°C;");
+                } if (entry.getGcEnrichment() != 0.0) {
+                    writer.write("GC Enrichment: " + String.format("%.2f", entry.getGcEnrichment() * 100) + "%;");
+                } if (entry.getNetCharge() != 0.0) {
+                    writer.write("Net Charge: " + entry.getNetCharge() + ";");
+                }
+                writer.newLine();
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 }
