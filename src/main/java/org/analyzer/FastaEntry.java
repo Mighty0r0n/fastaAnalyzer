@@ -15,6 +15,7 @@ class FastaEntry implements EntryI {
     private double gcEnrichment;
     private double meltingPoint;
     private double netCharge;
+    private double isoelectricPoint;
 
     FastaEntry(String seqID) {
         this.seqID = seqID;
@@ -34,6 +35,7 @@ class FastaEntry implements EntryI {
         this.calcMolecularWeight(seqType);
         this.calcMeltingPoint(seqType);
         this.calcNetCharge(seqType);
+        this.calcIsoelectricPoint(seqType, 7.0);
     }
 
     /**
@@ -132,8 +134,25 @@ class FastaEntry implements EntryI {
         switch (seqType) {
             case DNA, RNA, AMBIGUOUS ->
                     System.out.println("seqType = " + seqType + "; Not Compatible for NetCharge analysis");
-            case PEPTIDE -> this.netCharge = seqType.netCharge(this.alphabetCount);
+            case PEPTIDE -> this.netCharge = seqType.netCharge(this.alphabetCount, 7.0);
             default -> System.out.println("seqType = " + seqType + "not valid");
+        }
+    }
+    @Override
+    public void calcIsoelectricPoint(SequenceType seqType, Double pH){
+        final double tolerance = 0.004;
+        switch (seqType) {
+            case DNA, RNA, AMBIGUOUS -> System.out.println("HALLO");
+            case PEPTIDE -> {
+                double tmpNetCharge = seqType.netCharge(this.alphabetCount, pH);
+                if (Math.abs(tmpNetCharge) <= tolerance) {
+                    this.isoelectricPoint = pH;
+                } else if (tmpNetCharge > 0) {
+                    this.calcIsoelectricPoint(seqType, pH + (pH / 2));
+                } else if (tmpNetCharge < 0) {
+                    this.calcIsoelectricPoint(seqType, pH - (pH / 2));
+                }
+            }
         }
     }
 
@@ -174,5 +193,9 @@ class FastaEntry implements EntryI {
     @Override
     public int getSequenceLength() {
         return sequenceLength;
+    }
+    @Override
+    public double getIsoelectricPoint() {
+        return isoelectricPoint;
     }
 }

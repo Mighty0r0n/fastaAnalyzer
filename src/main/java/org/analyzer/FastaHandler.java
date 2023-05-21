@@ -98,7 +98,9 @@ public class FastaHandler {
                 } if (entry.getGcEnrichment() != 0.0) {
                     writer.write("GC Enrichment: " + String.format("%.2f", entry.getGcEnrichment() * 100) + "%;");
                 } if (entry.getNetCharge() != 0.0) {
-                    writer.write("Net Charge: " + entry.getNetCharge() + ";");
+                    writer.write("Net Charge(at ph 7): " + String.format("%.2f", entry.getNetCharge()) + ";");
+                } if (entry.getIsoelectricPoint() != 0.0){
+                    writer.write("IsoelectricPoint: " + String.format("%.2f", entry.getIsoelectricPoint())+ "pH;");
                 }
                 writer.newLine();
             }

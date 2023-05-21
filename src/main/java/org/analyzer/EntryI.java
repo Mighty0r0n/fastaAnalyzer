@@ -12,6 +12,8 @@ interface EntryI {
     void calcMolecularWeight(SequenceType seqType);
     void calcMeltingPoint(SequenceType seqType);
     void calcNetCharge(SequenceType seqType);
+    void calcIsoelectricPoint(SequenceType seqType, Double pH);
+    double getIsoelectricPoint();
     String getSeqID();
     String getSequence();
     int getSequenceLength();

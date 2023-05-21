@@ -75,35 +75,35 @@ public enum SequenceType {
         return meltingPoint;
     }
 
-    double netChargeFractionNTerm(Character aminoAcid, Map<Character, Double> peptideCount) {
+    double netChargeFractionNTerm(Character aminoAcid, Map<Character, Double> peptideCount, Double pH) {
         return ((peptideCount.get(aminoAcid) != null) ? peptideCount.get(aminoAcid) *
                 ((Math.pow(10, this.molecularWeights.get(aminoAcid))) /
-                        (Math.pow(10, 7) + Math.pow(10, this.molecularWeights.get(aminoAcid))))  : 0.0);
+                        (Math.pow(10, pH) + Math.pow(10, this.molecularWeights.get(aminoAcid))))  : 0.0);
     }
 
-    double netChargeFractionCTerm(Character aminoAcid, Map<Character, Double> peptideCount) {
+    double netChargeFractionCTerm(Character aminoAcid, Map<Character, Double> peptideCount, Double pH) {
         return ((peptideCount.get(aminoAcid) != null) ? peptideCount.get(aminoAcid) *
-                ((Math.pow(10, 7)) /
-                        (Math.pow(10, 7) + Math.pow(10, this.molecularWeights.get(aminoAcid))))  : 0.0);
+                ((Math.pow(10, pH)) /
+                        (Math.pow(10, pH) + Math.pow(10, this.molecularWeights.get(aminoAcid))))  : 0.0);
     }
 
-    double netCharge(Map<Character, Double> peptideCount) {
+    double netCharge(Map<Character, Double> peptideCount, Double pH) {
         Character[] nTermAminoAcids = {'+', 'R', 'K', 'H'};
         Character[] cTermAminoAcids = {'-', 'D', 'E', 'C', 'Y'};
         Map<Character, Double> termini = new HashMap<>();
         termini.put('+', 1.0);
         termini.put('-', 1.0);
 
-        double nTermSum = this.netChargeFractionNTerm('+', termini);
+        double nTermSum = this.netChargeFractionNTerm('+', termini, pH);
 
         for (Character amino: nTermAminoAcids){
-            nTermSum += this.netChargeFractionNTerm(amino, peptideCount);
+            nTermSum += this.netChargeFractionNTerm(amino, peptideCount, pH);
         }
 
-        double cTermSum = this.netChargeFractionCTerm('-', termini);
+        double cTermSum = this.netChargeFractionCTerm('-', termini, pH);
 
         for (Character amino: cTermAminoAcids){
-            cTermSum += this.netChargeFractionCTerm(amino, peptideCount);
+            cTermSum += this.netChargeFractionCTerm(amino, peptideCount, pH);
         }
         return nTermSum - cTermSum;
     }
