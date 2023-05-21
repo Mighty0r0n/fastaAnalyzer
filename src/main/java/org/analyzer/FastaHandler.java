@@ -76,6 +76,7 @@ public class FastaHandler {
             }catch (NoSuchElementException e) {
                 // Needed for adding last entry information to the object with above logic. TO-DO Fix Counter logic, to apply buildClass here!
                 this.entryList.get(headerCounter).settingSequenceProperties(sequenceHandler.toString(), this.sequenceType);
+                fastaReader.close();
                 return;
             }
 
