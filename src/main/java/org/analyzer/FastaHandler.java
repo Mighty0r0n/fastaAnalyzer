@@ -1,10 +1,7 @@
 package org.analyzer;
 
 import java.io.*;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.NoSuchElementException;
-import java.util.Scanner;
+import java.util.*;
 import java.lang.StringBuilder;
 /**
  * Public Class which is can be used outside the package, for analyzing the wanted fasta file.
@@ -12,7 +9,7 @@ import java.lang.StringBuilder;
 public class FastaHandler {
     private static FastaHandler instance;
     private final SequenceType sequenceType;
-    List<FastaEntry> entryList = new ArrayList<>();
+    LinkedList<FastaEntry> entryList = new LinkedList<>();
 
     public FastaHandler(SequenceType type){
         this.sequenceType = type;
