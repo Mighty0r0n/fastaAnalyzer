@@ -69,7 +69,6 @@ public enum SequenceType {
 
     double molecularWeight(Map<Character, Double> alphabetCount) {
         switch (this) {
-
             case DNA, RNA -> {
                 double seqModifier = (this == SequenceType.DNA) ? 61.96 : 159.00;
                 char utPlaceholder = (this == SequenceType.DNA) ? 'T' : 'U';

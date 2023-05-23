@@ -36,8 +36,9 @@ public class FastaHandler {
                 System.err.println("""
 
                         No Sequence Type provided. No immediate action required.
-                        FastaEntry object are still filled with the seqID and the Sequence, but no further metadata analysis is available from here.\s
-                        Please considerto rerun the Programm and submit the Sequence Type of the Fasta Sequences.""");
+                        FastaEntry object are still filled with the seqID the Sequence and translated Sequence(If DNA or RNA),
+                        but no further metadata analysis is available from here.\s
+                        Please consider to rerun the Programm and submit the Sequence Type of the Fasta Sequences.""");
             }
         } catch (IllegalArgumentException e) {
             System.err.println("""
