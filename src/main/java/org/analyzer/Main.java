@@ -30,12 +30,9 @@ public class Main {
 
         CommandLine line = parser.parse(options, args);
 
-        SequenceType seqType = SequenceType.valueOf(line.getOptionValue("t").toUpperCase());
+        FastaHandler handler = FastaHandler.getInstance();
 
-
-        FastaHandler handler = FastaHandler.getInstance(seqType);
-
-        handler.parseFasta(new File(line.getOptionValue("i")));
+        handler.parseFasta(new File(line.getOptionValue("i")), line.getOptionValue("t"));
         handler.generateOutputFiles(line.getOptionValue("o"));
 
         System.out.println("Programm ist fertig gelaufen. YIPPIE!");

@@ -3,16 +3,16 @@ package org.analyzer;
 import java.util.Map;
 
 /**
- * Interface for provided methods for abstract class FastaEntry subclasses
+ * Interface for provided methods for class FastaEntry
  */
 interface EntryI {
 
     void calcAlphabet();
-    void calcGC(SequenceType seqType);
-    void calcMolecularWeight(SequenceType seqType);
-    void calcMeltingPoint(SequenceType seqType);
-    void calcNetCharge(SequenceType seqType);
-    void calcIsoelectricPoint(SequenceType seqType, Double pH);
+    void setGC(SequenceType seqType);
+    void setMolecularWeight(SequenceType seqType);
+    void setMeltingPoint(SequenceType seqType);
+    void setNetCharge(SequenceType seqType);
+    void setIsoelectricPoint(SequenceType seqType, Double pH);
     double getIsoelectricPoint();
     String getSeqID();
     String getSequence();

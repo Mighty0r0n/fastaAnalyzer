@@ -4,8 +4,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * Enum class for setting the sequence type, needed for the calculations in this package. It provides additional
- * calculation methods for metadata.
+ * Enum class for setting the sequence type and needed for the calculations in this package.
  */
 public enum SequenceType {
     DNA(createDNAMap()),
@@ -13,10 +12,12 @@ public enum SequenceType {
     PEPTIDE(createPeptideMap()),
     AMBIGUOUS(createAmbiguousMap());
     private final Map<Character, Double> molecularWeights;
+
     SequenceType(Map<Character, Double> molecularWeights) {
         this.molecularWeights = molecularWeights;
     }
-    private static Map<Character, Double> createDNAMap(){
+
+    private static Map<Character, Double> createDNAMap() {
         Map<Character, Double> dnaMap = new HashMap<>();
         dnaMap.put('A', 313.21);
         dnaMap.put('C', 289.18);
@@ -24,7 +25,8 @@ public enum SequenceType {
         dnaMap.put('T', 304.20);
         return dnaMap;
     }
-    private static Map<Character, Double> createRNAMap(){
+
+    private static Map<Character, Double> createRNAMap() {
         Map<Character, Double> rnaMap = new HashMap<>();
         rnaMap.put('A', 329.2);
         rnaMap.put('C', 305.2);
@@ -33,7 +35,7 @@ public enum SequenceType {
         return rnaMap;
     }
 
-    private static Map<Character, Double> createPeptideMap(){
+    private static Map<Character, Double> createPeptideMap() {
         Map<Character, Double> peptideMap = new HashMap<>();
         peptideMap.put('C', 8.33);
         peptideMap.put('D', 3.86);
@@ -47,64 +49,114 @@ public enum SequenceType {
         return peptideMap;
     }
 
-    private static Map<Character, Double> createAmbiguousMap(){
-        Map<Character, Double> ambigousMap = new HashMap<>();
-        return ambigousMap;
+    private static Map<Character, Double> createAmbiguousMap() {
+        return new HashMap<>();
     }
 
-    double gcEnrichment(int sequenceLength, Double cCount, Double gCount) {
-        return (gCount + cCount) / sequenceLength;
-    }
-
-    double molecularWeight(Double aCount, Double cCount, Double gCount, Double utCount, Double seqModifier){
-        return aCount * this.molecularWeights.get('A') +
-                cCount * this.molecularWeights.get('C') +
-                gCount * this.molecularWeights.get('G') +
-                utCount * this.molecularWeights.get((this == SequenceType.DNA) ? 'T':'U') -
-                seqModifier;
-    }
-
-    double meltingPoint(int seqLength, Double aCount, Double cCount, Double gCount, Double utCount){
-        double meltingPoint;
-        if (seqLength < 14) {
-            meltingPoint = (aCount + utCount) * 2 + (gCount + cCount) * 4;
-        } else {
-            meltingPoint = 64.9 + ((41 * (gCount+cCount-16.4)) / seqLength );
+    double gcEnrichment(int sequenceLength, Map<Character, Double> alphabetCount) {
+        switch (this) {
+            case DNA, RNA -> {
+                double gCount = (alphabetCount.get('G') != null) ? alphabetCount.get('G') : 0.0;
+                double cCount = (alphabetCount.get('C') != null) ? alphabetCount.get('C') : 0.0;
+                return (gCount + cCount) / sequenceLength;
+            }
+            default -> {
+                return 0.0;
+            }
         }
 
-        return meltingPoint;
     }
 
-    double netChargeFractionNTerm(Character aminoAcid, Map<Character, Double> peptideCount, Double pH) {
+    double molecularWeight(Map<Character, Double> alphabetCount) {
+        switch (this) {
+
+            case DNA, RNA -> {
+                double seqModifier = (this == SequenceType.DNA) ? 61.96 : 159.00;
+                char utPlaceholder = (this == SequenceType.DNA) ? 'T' : 'U';
+                double utCount = (alphabetCount.get(utPlaceholder) != null) ? alphabetCount.get(utPlaceholder) : 0.0;
+
+                return ((alphabetCount.get('A') != null) ? alphabetCount.get('A') : 0.0) * this.molecularWeights.get('A') +
+                        ((alphabetCount.get('C') != null) ? alphabetCount.get('C') : 0.0) * this.molecularWeights.get('C') +
+                        ((alphabetCount.get('G') != null) ? alphabetCount.get('G') : 0.0) * this.molecularWeights.get('G') +
+                        utCount * this.molecularWeights.get(utPlaceholder) -
+                        seqModifier;
+            }
+            default -> {
+                return 0.0;
+            }
+        }
+
+    }
+
+    double meltingPoint(int seqLength, Map<Character, Double> alphabetCount) {
+
+        switch (this) {
+            case PEPTIDE -> {
+                return 0.0;
+            }
+            case DNA -> {
+                double meltingPoint;
+                if (seqLength < 14) {
+                    meltingPoint = (((alphabetCount.get('A') != null) ? alphabetCount.get('A') : 0.0) +
+                            ((alphabetCount.get('T') != null) ? alphabetCount.get('T') : 0.0)) * 2 +
+                            (((alphabetCount.get('G') != null) ? alphabetCount.get('G') : 0.0) +
+                                    ((alphabetCount.get('C') != null) ? alphabetCount.get('C') : 0.0)) * 4;
+                } else {
+                    meltingPoint = 64.9 + ((41 * (((alphabetCount.get('G') != null) ? alphabetCount.get('G') : 0.0) +
+                            ((alphabetCount.get('C') != null) ? alphabetCount.get('C') : 0.0) - 16.4)) / seqLength);
+                }
+
+                return meltingPoint;
+            }
+            default -> {
+                return 0.0;
+            }
+
+        }
+    }
+
+    private double netChargeFractionNTerm(Character aminoAcid, Map<Character, Double> peptideCount, Double pH) {
         return ((peptideCount.get(aminoAcid) != null) ? peptideCount.get(aminoAcid) *
                 ((Math.pow(10, this.molecularWeights.get(aminoAcid))) /
-                        (Math.pow(10, pH) + Math.pow(10, this.molecularWeights.get(aminoAcid))))  : 0.0);
+                        (Math.pow(10, pH) + Math.pow(10, this.molecularWeights.get(aminoAcid)))) : 0.0);
     }
 
-    double netChargeFractionCTerm(Character aminoAcid, Map<Character, Double> peptideCount, Double pH) {
+    private double netChargeFractionCTerm(Character aminoAcid, Map<Character, Double> peptideCount, Double pH) {
         return ((peptideCount.get(aminoAcid) != null) ? peptideCount.get(aminoAcid) *
                 ((Math.pow(10, pH)) /
-                        (Math.pow(10, pH) + Math.pow(10, this.molecularWeights.get(aminoAcid))))  : 0.0);
+                        (Math.pow(10, pH) + Math.pow(10, this.molecularWeights.get(aminoAcid)))) : 0.0);
     }
 
     double netCharge(Map<Character, Double> peptideCount, Double pH) {
-        Character[] nTermAminoAcids = {'+', 'R', 'K', 'H'};
-        Character[] cTermAminoAcids = {'-', 'D', 'E', 'C', 'Y'};
-        Map<Character, Double> termini = new HashMap<>();
-        termini.put('+', 1.0);
-        termini.put('-', 1.0);
 
-        double nTermSum = this.netChargeFractionNTerm('+', termini, pH);
+        switch (this) {
+            case DNA -> {
+                return 0.0;
+            }
+            case PEPTIDE -> {
+                Character[] nTermAminoAcids = {'+', 'R', 'K', 'H'};
+                Character[] cTermAminoAcids = {'-', 'D', 'E', 'C', 'Y'};
+                Map<Character, Double> termini = new HashMap<>();
+                termini.put('+', 1.0);
+                termini.put('-', 1.0);
 
-        for (Character amino: nTermAminoAcids){
-            nTermSum += this.netChargeFractionNTerm(amino, peptideCount, pH);
+                double nTermSum = this.netChargeFractionNTerm('+', termini, pH);
+
+                for (Character amino : nTermAminoAcids) {
+                    nTermSum += this.netChargeFractionNTerm(amino, peptideCount, pH);
+                }
+
+                double cTermSum = this.netChargeFractionCTerm('-', termini, pH);
+
+                for (Character amino : cTermAminoAcids) {
+                    cTermSum += this.netChargeFractionCTerm(amino, peptideCount, pH);
+                }
+                return nTermSum - cTermSum;
+
+            }
+            default -> {
+                return 0.0;
+            }
         }
-
-        double cTermSum = this.netChargeFractionCTerm('-', termini, pH);
-
-        for (Character amino: cTermAminoAcids){
-            cTermSum += this.netChargeFractionCTerm(amino, peptideCount, pH);
-        }
-        return nTermSum - cTermSum;
     }
 }
