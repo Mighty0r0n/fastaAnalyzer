@@ -191,14 +191,11 @@ class FastaEntry implements EntryI {
     public void setNetCharge(SequenceType seqType) {
         switch (seqType) {
             case PEPTIDE -> this.netCharge = seqType.netCharge(this.alphabetCount, 7.0);
-            case DNA, RNA ->{
-                this.netCharge = SequenceType.PEPTIDE.netCharge(SequenceHandler.countAlphabet(
-                        this.translatedSequence),
-                        7.0
-                );
-            }
+            case DNA, RNA -> this.netCharge = SequenceType.PEPTIDE.netCharge(SequenceHandler.countAlphabet(
+                            this.translatedSequence),
+                    7.0
+            );
         }
-
     }
 
     /**
