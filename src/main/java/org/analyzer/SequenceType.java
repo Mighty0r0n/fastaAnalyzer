@@ -56,9 +56,10 @@ public enum SequenceType {
     double gcEnrichment(int sequenceLength, Map<Character, Double> alphabetCount) {
         switch (this) {
             case DNA, RNA -> {
-                double gCount = (alphabetCount.get('G') != null) ? alphabetCount.get('G') : 0.0;
+                double gCount = ((alphabetCount.get('G') != null) ? alphabetCount.get('G') : 0.0);
                 double cCount = (alphabetCount.get('C') != null) ? alphabetCount.get('C') : 0.0;
-                return (gCount + cCount) / sequenceLength;
+                return (((alphabetCount.get('G') != null) ? alphabetCount.get('G') : 0.0) +
+                        ((alphabetCount.get('C') != null) ? alphabetCount.get('C') : 0.0)) / sequenceLength;
             }
             default -> {
                 return 0.0;
