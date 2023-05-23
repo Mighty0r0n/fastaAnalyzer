@@ -79,7 +79,7 @@ class FastaEntry implements EntryI {
 
         public static String translateSequence(String seq) {
             // Ignoring if DNA or RNA... Still need to handle PEPTIDES
-            String sequence = seq.replaceAll("U", "T");
+            String sequence = seq.toUpperCase().replaceAll("U", "T");
 
             // Falls Sequenz nicht durch 3 Teilbar ist und somit nicht jedes k mer überprüft werden kann. Sonst OutOfBoundException. Overhang wird ignoriert.
             int baseOverhang = sequence.length() % 3;
@@ -95,7 +95,7 @@ class FastaEntry implements EntryI {
 
         public static Map<Character, Double> countAlphabet(String sequence) {
             Map<Character, Double> count = new HashMap<>();
-            sequence.chars()
+            sequence.toUpperCase().chars()
                     .mapToObj(c -> (char) c)
                     .forEach(c -> count.merge(c, 1.0, Double::sum));
 
@@ -126,7 +126,7 @@ class FastaEntry implements EntryI {
      * @param seqType         enum for sequence type
      */
     void settingSequenceProperties(String sequenceHandler, SequenceType seqType) {
-        this.sequence = sequenceHandler;
+        this.sequence = sequenceHandler.toUpperCase();
         this.sequenceLength = sequenceHandler.length();
         this.calcAlphabet();
         this.setTranslatedSequence(seqType);
@@ -191,6 +191,12 @@ class FastaEntry implements EntryI {
     public void setNetCharge(SequenceType seqType) {
         switch (seqType) {
             case PEPTIDE -> this.netCharge = seqType.netCharge(this.alphabetCount, 7.0);
+            case DNA, RNA ->{
+                this.netCharge = SequenceType.PEPTIDE.netCharge(SequenceHandler.countAlphabet(
+                        this.translatedSequence),
+                        7.0
+                );
+            }
         }
 
     }
