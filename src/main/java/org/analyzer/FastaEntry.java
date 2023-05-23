@@ -8,11 +8,106 @@ import java.util.Map;
  * Class that represents one fasta entry and saves matadata about it.
  */
 class FastaEntry implements EntryI {
+    public static class SequenceHandler {
+        private static final Map<String, Character> codonMap = createCodonMap();
+
+        private static Map<String, Character> createCodonMap() {
+            Map<String, Character> codonMap = new HashMap<>();
+            codonMap.put("AAA", 'K');
+            codonMap.put("AAC", 'N');
+            codonMap.put("AAG", 'K');
+            codonMap.put("AAT", 'N');
+            codonMap.put("ACA", 'T');
+            codonMap.put("ACC", 'T');
+            codonMap.put("ACG", 'T');
+            codonMap.put("ACT", 'T');
+            codonMap.put("AGA", 'R');
+            codonMap.put("AGC", 'S');
+            codonMap.put("AGG", 'R');
+            codonMap.put("AGT", 'S');
+            codonMap.put("ATA", 'I');
+            codonMap.put("ATC", 'I');
+            codonMap.put("ATG", 'M');
+            codonMap.put("ATT", 'I');
+            codonMap.put("CAA", 'Q');
+            codonMap.put("CAC", 'H');
+            codonMap.put("CAG", 'Q');
+            codonMap.put("CAT", 'H');
+            codonMap.put("CCA", 'P');
+            codonMap.put("CCC", 'P');
+            codonMap.put("CCG", 'P');
+            codonMap.put("CCT", 'P');
+            codonMap.put("CGA", 'R');
+            codonMap.put("CGC", 'R');
+            codonMap.put("CGG", 'R');
+            codonMap.put("CGT", 'R');
+            codonMap.put("CTA", 'L');
+            codonMap.put("CTC", 'L');
+            codonMap.put("CTG", 'L');
+            codonMap.put("CTT", 'L');
+            codonMap.put("GAA", 'E');
+            codonMap.put("GAC", 'D');
+            codonMap.put("GAG", 'E');
+            codonMap.put("GAT", 'D');
+            codonMap.put("GCA", 'A');
+            codonMap.put("GCC", 'A');
+            codonMap.put("GCG", 'A');
+            codonMap.put("GCT", 'A');
+            codonMap.put("GGA", 'G');
+            codonMap.put("GGC", 'G');
+            codonMap.put("GGG", 'G');
+            codonMap.put("GGT", 'G');
+            codonMap.put("GTA", 'V');
+            codonMap.put("GTC", 'V');
+            codonMap.put("GTG", 'V');
+            codonMap.put("GTT", 'V');
+            codonMap.put("TAA", '*');
+            codonMap.put("TAC", 'Y');
+            codonMap.put("TAG", '*');
+            codonMap.put("TAT", 'Y');
+            codonMap.put("TCA", 'S');
+            codonMap.put("TCC", 'S');
+            codonMap.put("TCG", 'S');
+            codonMap.put("TCT", 'S');
+            codonMap.put("TGA", '*');
+            codonMap.put("TGC", 'C');
+            codonMap.put("TGG", 'W');
+            codonMap.put("TGT", 'C');
+
+            return codonMap;
+        }
+
+        public static String translateSequence(String seq) {
+            // Ignoring if DNA or RNA... Still need to handle PEPTIDES
+            String sequence = seq.replaceAll("U", "T");
+
+            // Falls Sequenz nicht durch 3 Teilbar ist und somit nicht jedes k mer überprüft werden kann. Sonst OutOfBoundException. Overhang wird ignoriert.
+            int baseOverhang = sequence.length() % 3;
+            int newEnd = sequence.length() - baseOverhang;
+            StringBuilder translatedSequence = new StringBuilder();
+
+            for (int i = 0; i < newEnd; i += 3) {
+                translatedSequence.append(codonMap.get(sequence.substring(i, i + 3)));
+            }
+            return translatedSequence.toString();
+
+        }
+
+        public static Map<Character, Double> countAlphabet(String sequence) {
+            Map<Character, Double> count = new HashMap<>();
+            sequence.chars()
+                    .mapToObj(c -> (char) c)
+                    .forEach(c -> count.merge(c, 1.0, Double::sum));
+
+            return count;
+        }
+    }
+
     private final String seqID;
     private String sequence;
     private String translatedSequence;
     private int sequenceLength;
-    private final Map<Character, Double> alphabetCount = new HashMap<>();
+    private Map<Character, Double> alphabetCount;
     private double molecularWeight;
     private double gcEnrichment;
     private double meltingPoint;
@@ -21,74 +116,6 @@ class FastaEntry implements EntryI {
 
     FastaEntry(String seqID) {
         this.seqID = seqID;
-    }
-
-    private static final Map<String, Character> codonMap = createCodonMap();
-
-    private static Map<String, Character> createCodonMap() {
-        Map<String, Character> codonMap = new HashMap<>();
-        codonMap.put("AAA", 'K');
-        codonMap.put("AAC", 'N');
-        codonMap.put("AAG", 'K');
-        codonMap.put("AAT", 'N');
-        codonMap.put("ACA", 'T');
-        codonMap.put("ACC", 'T');
-        codonMap.put("ACG", 'T');
-        codonMap.put("ACT", 'T');
-        codonMap.put("AGA", 'R');
-        codonMap.put("AGC", 'S');
-        codonMap.put("AGG", 'R');
-        codonMap.put("AGT", 'S');
-        codonMap.put("ATA", 'I');
-        codonMap.put("ATC", 'I');
-        codonMap.put("ATG", 'M');
-        codonMap.put("ATT", 'I');
-        codonMap.put("CAA", 'Q');
-        codonMap.put("CAC", 'H');
-        codonMap.put("CAG", 'Q');
-        codonMap.put("CAT", 'H');
-        codonMap.put("CCA", 'P');
-        codonMap.put("CCC", 'P');
-        codonMap.put("CCG", 'P');
-        codonMap.put("CCT", 'P');
-        codonMap.put("CGA", 'R');
-        codonMap.put("CGC", 'R');
-        codonMap.put("CGG", 'R');
-        codonMap.put("CGT", 'R');
-        codonMap.put("CTA", 'L');
-        codonMap.put("CTC", 'L');
-        codonMap.put("CTG", 'L');
-        codonMap.put("CTT", 'L');
-        codonMap.put("GAA", 'E');
-        codonMap.put("GAC", 'D');
-        codonMap.put("GAG", 'E');
-        codonMap.put("GAT", 'D');
-        codonMap.put("GCA", 'A');
-        codonMap.put("GCC", 'A');
-        codonMap.put("GCG", 'A');
-        codonMap.put("GCT", 'A');
-        codonMap.put("GGA", 'G');
-        codonMap.put("GGC", 'G');
-        codonMap.put("GGG", 'G');
-        codonMap.put("GGT", 'G');
-        codonMap.put("GTA", 'V');
-        codonMap.put("GTC", 'V');
-        codonMap.put("GTG", 'V');
-        codonMap.put("GTT", 'V');
-        codonMap.put("TAA", '*');
-        codonMap.put("TAC", 'Y');
-        codonMap.put("TAG", '*');
-        codonMap.put("TAT", 'Y');
-        codonMap.put("TCA", 'S');
-        codonMap.put("TCC", 'S');
-        codonMap.put("TCG", 'S');
-        codonMap.put("TCT", 'S');
-        codonMap.put("TGA", '*');
-        codonMap.put("TGC", 'C');
-        codonMap.put("TGG", 'W');
-        codonMap.put("TGT", 'C');
-
-        return codonMap;
     }
 
     /**
@@ -102,7 +129,7 @@ class FastaEntry implements EntryI {
         this.sequence = sequenceHandler;
         this.sequenceLength = sequenceHandler.length();
         this.calcAlphabet();
-        this.translateSequence(seqType);
+        this.setTranslatedSequence(seqType);
         this.setGC(seqType);
         this.setMolecularWeight(seqType);
         this.setMeltingPoint(seqType);
@@ -115,28 +142,13 @@ class FastaEntry implements EntryI {
      */
     @Override
     public void calcAlphabet() {
-        this.sequence.chars()
-                .mapToObj(c -> (char) c)
-                .forEach(c -> this.alphabetCount.merge(c, 1.0, Double::sum));
+        this.alphabetCount = SequenceHandler.countAlphabet(this.sequence);
     }
 
     @Override
-    public void translateSequence(SequenceType seqType) {
+    public void setTranslatedSequence(SequenceType seqType) {
         switch (seqType) {
-            case DNA, RNA -> {
-                // Ignoring if DNA or RNA... Still need to handle PEPTIDES
-                String sequence = this.sequence.replaceAll("U", "T");
-
-                // Falls Sequenz nicht durch 3 Teilbar ist und somit nicht jedes k mer überprüft werden kann. Sonst OutOfBoundException. Overhang wird ignoriert.
-                int baseOverhang = sequence.length() % 3;
-                int newEnd = this.sequenceLength - baseOverhang;
-                StringBuilder translatedSequence = new StringBuilder();
-
-                for (int i = 0; i < newEnd; i += 3) {
-                    translatedSequence.append(FastaEntry.codonMap.get(sequence.substring(i, i + 3)));
-                }
-                this.translatedSequence = translatedSequence.toString();
-            }
+            case DNA, RNA -> this.translatedSequence = SequenceHandler.translateSequence(this.sequence);
         }
     }
 
@@ -177,10 +189,8 @@ class FastaEntry implements EntryI {
      */
     @Override
     public void setNetCharge(SequenceType seqType) {
-        switch (seqType){
+        switch (seqType) {
             case PEPTIDE -> this.netCharge = seqType.netCharge(this.alphabetCount, 7.0);
-
-
         }
 
     }
@@ -189,7 +199,7 @@ class FastaEntry implements EntryI {
      * Recursive Logic for getting the isoelectric Point of a sequence.
      *
      * @param seqType SequenceType Enum for the calculation
-     * @param pH Initial pH to start the recursive Function. (typically 7)
+     * @param pH      Initial pH to start the recursive Function. (typically 7)
      */
     // Extractable logic?
     @Override
