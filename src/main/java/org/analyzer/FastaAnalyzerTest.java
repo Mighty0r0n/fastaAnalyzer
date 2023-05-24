@@ -16,11 +16,22 @@ import static org.junit.jupiter.api.Assertions.*;
  */
 public class FastaAnalyzerTest {
 
+    /**
+     * Generates a basic filled Object for further testing
+     *
+     * @return FastaHandler with some FastaEntrys in entryList
+     * @throws FileNotFoundException If provided with non existing File
+     */
     public FastaHandler generateObject() throws FileNotFoundException {
 
         return new FastaHandler(new File("/home/daniel/IdeaProjects/fastaAnalyzer/TestFiles/dna.fasta"), "dna");
     }
 
+    /**
+     * Test's if objects were set up the right way
+     *
+     * @throws FileNotFoundException If provided with non existing File
+     */
     @Test
     public void setUpTest() throws FileNotFoundException {
 
@@ -33,6 +44,11 @@ public class FastaAnalyzerTest {
         assertEquals(6, testHandler.entryList.size());
     }
 
+    /**
+     * Test the Calculations for DNA type sequences
+     *
+     * @throws FileNotFoundException If provided with non existing File
+     */
     @Test
     public void testCalcsDNA() throws FileNotFoundException {
         FastaHandler testhandler = generateObject();
@@ -50,6 +66,11 @@ public class FastaAnalyzerTest {
         assertEquals(34, melt);
     }
 
+    /**
+     * Test for Peptide specific calculations
+     *
+     * @throws FileNotFoundException If provided with non existing File
+     */
     @Test
     public void testCalcsPeptide() throws FileNotFoundException {
         FastaHandler testhandler = new FastaHandler(new File("/home/daniel/IdeaProjects/fastaAnalyzer/TestFiles/peptide.fasta"), "peptide");

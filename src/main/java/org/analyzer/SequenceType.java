@@ -8,9 +8,21 @@ import java.util.Objects;
  * Enum class for setting the sequence type and needed for the calculations in this package.
  */
 public enum SequenceType {
+    /**
+     * Specifies Enum Type constants and calculations for DNA
+     */
     DNA(createDNAMap()),
+    /**
+     * Specifies Enum Type constants and calculations for RNA
+     */
     RNA(createRNAMap()),
+    /**
+     * Specifies Enum Type constants and calculations for Peptides
+     */
     PEPTIDE(createPeptideMap()),
+    /**
+     * Specifies Enum Type constants and calculations for Ambiguous sequences
+     */
     AMBIGUOUS(createAmbiguousMap());
     private final Map<Character, Double> molecularWeights;
 
@@ -75,7 +87,7 @@ public enum SequenceType {
     }
 
     /**
-     * Calculation for gC enrichment. Summation of molecular Weights of all occurring Chars of the Alphabet from the
+     * Calculation for molecular Weight. Summation of molecular Weights of all occurring Chars of the Alphabet from the
      * Input Sequence.
      *
      * @param alphabetCount Count of each char occurrence in the inputSequence
@@ -102,7 +114,7 @@ public enum SequenceType {
     }
 
     /**
-     * Calculation for gC enrichment.
+     * Calculation for the melting point of dna sequences, like oligo's.
      * For Sequences short than 14:
      * (A+T)*2+(G+C)*4
      * for longer then 14:

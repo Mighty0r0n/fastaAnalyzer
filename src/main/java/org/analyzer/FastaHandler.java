@@ -5,13 +5,20 @@ import java.util.*;
 import java.lang.StringBuilder;
 
 /**
- * Public Class which can be called public. Methods are hidden inside the Constructor. It's possible to
+ * Class for handling the FastaEntrys. Methods are hidden inside the Constructor. It's possible to
  * append more Objects to this Object via the wrapper Function addFastaEntry()
  */
-public class FastaHandler {
+class FastaHandler {
     private static FastaHandler instance;
     LinkedList<FastaEntry> entryList = new LinkedList<>();
 
+    /**
+     * Public Constructor for the Class. It needs a fasta file and the corresponding Sequence Type to get instantiated
+     *
+     * @param fastaFile File to start analysis with
+     * @param seqType Sequence type of the input sequence
+     * @throws FileNotFoundException if wrong file path is provided
+     */
     public FastaHandler(File fastaFile, String seqType) throws FileNotFoundException {
         this.parseFasta(fastaFile, seqType);
     }
@@ -19,6 +26,9 @@ public class FastaHandler {
     /**
      * Invoke for singleton
      *
+     * @param fastaFile Input File for the analysis
+     * @param seqType Sequence Type of the input file
+     * @throws FileNotFoundException If Incorrect File Path is provided
      * @return instance of the class
      */
     public static FastaHandler getInstance(File fastaFile, String seqType) throws FileNotFoundException {

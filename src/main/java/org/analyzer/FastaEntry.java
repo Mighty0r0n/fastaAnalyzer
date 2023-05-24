@@ -8,6 +8,9 @@ import java.util.Map;
  * Class that represents one fasta entry and saves metadata about it.
  */
 class FastaEntry implements EntryI {
+    /**
+     * Static Class for Sequence manipulation in context of nucleotype or peptide sequences
+     */
     public static class SequenceHandler {
         private static final Map<String, Character> codonMap = createCodonMap();
 
@@ -77,6 +80,12 @@ class FastaEntry implements EntryI {
             return codonMap;
         }
 
+        /**
+         * Generates a Peptide Sequence from DNA or RNA type Sequences
+         *
+         * @param seq Sequence to get Translated
+         * @return The Translated Sequence
+         */
         public static String translateSequence(String seq) {
             // Ignoring if DNA or RNA... Still need to handle PEPTIDES
             String sequence = seq.toUpperCase().replaceAll("U", "T");
@@ -95,6 +104,12 @@ class FastaEntry implements EntryI {
 
         }
 
+        /**
+         * Count the Occurance of each Character inside a Sequence.
+         *
+         * @param sequence Sequence which alphabet should be counted.
+         * @return a HashMap of the Counts
+         */
         public static Map<Character, Double> countAlphabet(String sequence) {
             Map<Character, Double> count = new HashMap<>();
             sequence.toUpperCase().chars()
@@ -116,6 +131,11 @@ class FastaEntry implements EntryI {
     private double netCharge;
     private double isoelectricPoint;
 
+    /**
+     * Package wide Constructor. Needs a SeqID to get instantiated
+     *
+     * @param seqID Sequence ID for the Entry
+     */
     FastaEntry(String seqID) {
         this.seqID = seqID;
     }
