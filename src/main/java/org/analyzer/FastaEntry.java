@@ -237,9 +237,9 @@ class FastaEntry implements EntryI {
     public void setIsoelectricPoint(SequenceType seqType, Double pH) {
 
         switch (seqType) {
-            case PEPTIDE -> this.isoelectricPoint = seqType.setIsoelectricPoint(seqType, this.alphabetCount, 7.0);
+            case PEPTIDE -> this.isoelectricPoint = seqType.isoelectricPoint(seqType, this.alphabetCount, 7.0);
             case DNA, RNA ->
-                    this.isoelectricPoint = SequenceType.PEPTIDE.setIsoelectricPoint(seqType, SequenceHandler.countAlphabet(this.sequence), 7.0);
+                    this.isoelectricPoint = SequenceType.PEPTIDE.isoelectricPoint(SequenceType.PEPTIDE, SequenceHandler.countAlphabet(this.sequence), 7.0);
         }
     }
 

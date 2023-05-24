@@ -197,19 +197,19 @@ public enum SequenceType {
      * @param pH           Initial pH for the algorithm. Usually start with 7
      * @return the value of the pH at which the netCharge = 0
      */
-    double setIsoelectricPoint(SequenceType seqType, Map<Character, Double> peptideCount, double pH) {
+    double isoelectricPoint(SequenceType seqType, Map<Character, Double> peptideCount, double pH) {
         double pHadjusted = pH;
 
         if (Objects.requireNonNull(seqType) == SequenceType.PEPTIDE) {
             final double tolerance = 0.1;
 
-            double tmpNetCharge = this.netCharge(peptideCount, pH);
+            double tmpNetCharge = this.netCharge(peptideCount, pHadjusted);
             if (Math.abs(tmpNetCharge) <= tolerance) {
                 return pHadjusted;
             } else if (tmpNetCharge > 0) {
-                pHadjusted = this.setIsoelectricPoint(this, peptideCount, pH + (pH / 2));
+                pHadjusted = this.isoelectricPoint(this, peptideCount, pHadjusted + (pHadjusted / 2));
             } else if (tmpNetCharge < 0) {
-                pHadjusted = this.setIsoelectricPoint(this, peptideCount, pH - (pH / 2));
+                pHadjusted = this.isoelectricPoint(this, peptideCount, pHadjusted - (pHadjusted / 2));
             }
         } else {
             pHadjusted = 0.0;

@@ -9,34 +9,8 @@ import java.lang.StringBuilder;
  * append more Objects to this Object via the wrapper Function addFastaEntry()
  */
 class FastaHandler {
-    private static FastaHandler instance;
     LinkedList<FastaEntry> entryList = new LinkedList<>();
-
-    /**
-     * Public Constructor for the Class. It needs a fasta file and the corresponding Sequence Type to get instantiated
-     *
-     * @param fastaFile File to start analysis with
-     * @param seqType Sequence type of the input sequence
-     * @throws FileNotFoundException if wrong file path is provided
-     */
-    public FastaHandler(File fastaFile, String seqType) throws FileNotFoundException {
-        this.parseFasta(fastaFile, seqType);
-    }
-
-    /**
-     * Invoke for singleton
-     *
-     * @param fastaFile Input File for the analysis
-     * @param seqType Sequence Type of the input file
-     * @throws FileNotFoundException If Incorrect File Path is provided
-     * @return instance of the class
-     */
-    public static FastaHandler getInstance(File fastaFile, String seqType) throws FileNotFoundException {
-        if (instance == null) {
-            instance = new FastaHandler(fastaFile, seqType);
-        }
-        return instance;
-    }
+    private static FastaHandler instance;
 
     private static SequenceType getSequenceType(String type) {
         SequenceType seqType = SequenceType.AMBIGUOUS;
@@ -69,6 +43,55 @@ class FastaHandler {
     }
 
     /**
+     * Public Constructor for the Class. It needs a fasta file and the corresponding Sequence Type to get instantiated
+     *
+     * @param fastaFile File to start analysis with
+     * @param seqType   Sequence type of the input sequence
+     * @throws FileNotFoundException if wrong file path is provided
+     */
+    public FastaHandler(File fastaFile, String seqType) throws FileNotFoundException {
+        this.parseFasta(fastaFile, seqType);
+    }
+
+    /**
+     * Public Constructor for the Class. It needs a fasta file and the corresponding Sequence Type to get instantiated
+     *
+     * @param fastaFile File to start analysis with
+     * @throws FileNotFoundException if wrong file path is provided
+     */
+    public FastaHandler(File fastaFile) throws FileNotFoundException {
+        this.parseFasta(fastaFile, null);
+    }
+
+    /**
+     * Invoke for singleton
+     *
+     * @param fastaFile Input File for the analysis
+     * @param seqType   Sequence Type of the input file
+     * @return instance of the class
+     * @throws FileNotFoundException If Incorrect File Path is provided
+     */
+    public static FastaHandler getInstance(File fastaFile, String seqType) throws FileNotFoundException {
+        if (instance == null) {
+            instance = new FastaHandler(fastaFile, seqType);
+        }
+        return instance;
+    }
+    /**
+     * Invoke for singleton
+     *
+     * @param fastaFile Input File for the analysis
+     * @return instance of the class
+     * @throws FileNotFoundException If Incorrect File Path is provided
+     */
+    public static FastaHandler getInstance(File fastaFile) throws FileNotFoundException {
+        if (instance == null) {
+            instance = new FastaHandler(fastaFile);
+        }
+        return instance;
+    }
+
+    /**
      * Wrapper for the parseFasta() method so it can be used outside the package without direct access rights
      * to the parser logic and calculation setters.
      *
@@ -78,6 +101,17 @@ class FastaHandler {
      */
     public void addFastaEntrys(File fasta, String type) throws FileNotFoundException {
         this.parseFasta(fasta, type);
+    }
+
+    /**
+     * Wrapper for the parseFasta() method so it can be used outside the package without direct access rights
+     * to the parser logic and calculation setters.
+     *
+     * @param fasta File to analyze
+     * @throws FileNotFoundException If an invalid FilePath is given as Input an exception is thrown.
+     */
+    public void addFastaEntrys(File fasta) throws FileNotFoundException {
+        this.parseFasta(fasta, null);
     }
 
     /**
@@ -159,7 +193,6 @@ class FastaHandler {
                     writer.write("Iso electricPoint: " + String.format("%.2f", entry.getIsoelectricPoint()) + "pH;");
                 }
                 writer.newLine();
-                writer.close();
             }
         } catch (IOException e) {
             e.printStackTrace();
