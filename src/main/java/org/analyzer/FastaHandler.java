@@ -51,7 +51,7 @@ public class FastaHandler {
                     -RNA
                     -PEPTIDE
                     -AMBIGUOUS
-                    
+                                        
                     If set ambiguous only the objects with the sequences are createt. No metadataanalysis available.
                     """);
             e.printStackTrace();
@@ -77,7 +77,6 @@ public class FastaHandler {
         // Creating necessary objects for parsing
         Scanner fastaReader = new Scanner(fasta);
         StringBuilder sequenceHandler = new StringBuilder();
-        int tmpHash;
 
         int headerCounter = -1;
 
@@ -90,18 +89,14 @@ public class FastaHandler {
                     // tmp object is created here and saved in entryList. The object gets destroyed if logically
                     // new object is found for creating in the file.
                     FastaEntry tmpEntry = new FastaEntry(fastaLine);
-                    tmpHash = tmpEntry.hashCode();
                     this.entryList.add(tmpEntry);
 
-
                     if (headerCounter != -1) {
-                        for(FastaEntry entry: this.entryList){
-                            if (entry.hashCode() == tmpHash){
-                                entry.settingSequenceProperties(sequenceHandler.toString(), seqType);
-                            }
-                        }
-                        // this.entryList.get(headerCounter).settingSequenceProperties(sequenceHandler.toString(), seqType);
+                        // For getting the forelast entry in the entryList because this logic appends the sequence of the
+                        // forelast when a NEW Object is found.
+                        this.entryList.get(this.entryList.size() - 2).settingSequenceProperties(sequenceHandler.toString(), seqType);
                     }
+
                     // clear sequenceHandler after every entry discovered and update headerCounter
                     sequenceHandler = new StringBuilder();
                     headerCounter++;
@@ -112,8 +107,8 @@ public class FastaHandler {
 
                 }
             } catch (NoSuchElementException e) {
-                // Needed for adding last entry information to the object with above logic. TO-DO Fix Counter logic, to apply buildClass here!
-                this.entryList.get(headerCounter).settingSequenceProperties(sequenceHandler.toString(), seqType);
+                // Needed for adding last entry information to the object with above logic.
+                this.entryList.get(this.entryList.size() - 1).settingSequenceProperties(sequenceHandler.toString(), seqType);
                 fastaReader.close();
                 return;
             }

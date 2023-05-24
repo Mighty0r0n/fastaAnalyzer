@@ -102,7 +102,6 @@ class FastaEntry implements EntryI {
             return count;
         }
     }
-
     private final String seqID;
     private String sequence;
     private String translatedSequence;
@@ -208,20 +207,25 @@ class FastaEntry implements EntryI {
     @Override
     public void setIsoelectricPoint(SequenceType seqType, Double pH) {
 
-        switch (seqType) {
-            case PEPTIDE -> {
-                final double tolerance = 0.004;
-                double tmpNetCharge = seqType.netCharge(this.alphabetCount, pH);
-                if (Math.abs(tmpNetCharge) <= tolerance) {
-                    this.isoelectricPoint = pH;
-                } else if (tmpNetCharge > 0) {
-                    this.setIsoelectricPoint(seqType, pH + (pH / 2));
-                } else if (tmpNetCharge < 0) {
-                    this.setIsoelectricPoint(seqType, pH - (pH / 2));
-                }
-            }
-            default -> System.out.println();
+        switch (seqType){
+            case PEPTIDE -> this.isoelectricPoint = seqType.setIsoelectricPoint(seqType, this.alphabetCount, 7.0);
+            case DNA, RNA -> this.isoelectricPoint = SequenceType.PEPTIDE.setIsoelectricPoint(seqType, SequenceHandler.countAlphabet(this.sequence), 7.0);
         }
+
+//        switch (seqType) {
+//            case PEPTIDE -> {
+//                final double tolerance = 0.1;
+//                double tmpNetCharge = seqType.netCharge(this.alphabetCount, pH);
+//                if (Math.abs(tmpNetCharge) <= tolerance) {
+//                    this.isoelectricPoint = pH;
+//                } else if (tmpNetCharge > 0) {
+//                    this.setIsoelectricPoint(seqType, pH + (pH / 2));
+//                } else if (tmpNetCharge < 0) {
+//                    this.setIsoelectricPoint(seqType, pH - (pH / 2));
+//                }
+//            }
+//            default -> System.out.println();
+//        }
     }
 
     @Override

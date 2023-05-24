@@ -56,8 +56,6 @@ public enum SequenceType {
     double gcEnrichment(int sequenceLength, Map<Character, Double> alphabetCount) {
         switch (this) {
             case DNA, RNA -> {
-                double gCount = ((alphabetCount.get('G') != null) ? alphabetCount.get('G') : 0.0);
-                double cCount = (alphabetCount.get('C') != null) ? alphabetCount.get('C') : 0.0;
                 return (((alphabetCount.get('G') != null) ? alphabetCount.get('G') : 0.0) +
                         ((alphabetCount.get('C') != null) ? alphabetCount.get('C') : 0.0)) / sequenceLength;
             }
@@ -157,6 +155,26 @@ public enum SequenceType {
             default -> {
                 return 0.0;
             }
+        }
+    }
+
+    double setIsoelectricPoint(SequenceType seqType ,Map<Character, Double> peptideCount, double pH) {
+
+        switch (this) {
+            case PEPTIDE -> {
+                final double tolerance = 0.1;
+
+                double tmpNetCharge = this.netCharge(peptideCount, pH);
+                if (Math.abs(tmpNetCharge) <= tolerance) {
+                    return pH;
+                } else if (tmpNetCharge > 0) {
+                    this.setIsoelectricPoint(this, peptideCount,pH + (pH / 2));
+                } else if (tmpNetCharge < 0) {
+                    this.setIsoelectricPoint(this, peptideCount, pH - (pH / 2));
+                }
+                return pH;
+            }
+            default -> {return 0.0;}
         }
     }
 }

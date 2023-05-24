@@ -31,10 +31,7 @@ public class Main {
         CommandLine line = parser.parse(options, args);
 
         FastaHandler handler = FastaHandler.getInstance(new File(line.getOptionValue("i")), line.getOptionValue("t"));
-        handler.addFastaEntrys(new File("/home/daniel/IdeaProjects/fastaAnalyzer/TestFiles/test2.fasta"), line.getOptionValue("t"));
-
-        //  Parse Fasta in Konstruktor umlagern und private setzen. Public Wrapper Methode addEntrys in FastaHandler Implementieren. Semi Automatisiert.
-        // handler.parseFasta(new File(line.getOptionValue("i")), line.getOptionValue("t"));
+        handler.addFastaEntrys(new File("/home/daniel/IdeaProjects/fastaAnalyzer/TestFiles/test2.fasta"), "rna");
         handler.generateOutputFiles(line.getOptionValue("o"));
 
         System.out.println("Programm ist fertig gelaufen. YIPPIE!");
