@@ -158,7 +158,8 @@ public enum SequenceType {
         }
     }
 
-    double setIsoelectricPoint(SequenceType seqType ,Map<Character, Double> peptideCount, double pH) {
+    double setIsoelectricPoint(SequenceType seqType, Map<Character, Double> peptideCount, double pH) {
+        double pHadjusted = pH;
 
         switch (this) {
             case PEPTIDE -> {
@@ -166,15 +167,18 @@ public enum SequenceType {
 
                 double tmpNetCharge = this.netCharge(peptideCount, pH);
                 if (Math.abs(tmpNetCharge) <= tolerance) {
-                    return pH;
+                    return pHadjusted;
                 } else if (tmpNetCharge > 0) {
-                    this.setIsoelectricPoint(this, peptideCount,pH + (pH / 2));
+                    pHadjusted = this.setIsoelectricPoint(this, peptideCount, pH + (pH / 2));
                 } else if (tmpNetCharge < 0) {
-                    this.setIsoelectricPoint(this, peptideCount, pH - (pH / 2));
+                    pHadjusted = this.setIsoelectricPoint(this, peptideCount, pH - (pH / 2));
                 }
-                return pH;
+
             }
-            default -> {return 0.0;}
+            default -> pHadjusted = 0.0;
+
+
         }
+        return pHadjusted;
     }
 }
