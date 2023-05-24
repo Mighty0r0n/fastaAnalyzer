@@ -11,14 +11,18 @@ public class FastaHandler {
     private static FastaHandler instance;
     LinkedList<FastaEntry> entryList = new LinkedList<>();
 
+    public FastaHandler(File fastaFile, String seqType) throws FileNotFoundException {
+        this.parseFasta(fastaFile, seqType);
+    }
+
     /**
      * Invoke for singleton
      *
      * @return instance of the class
      */
-    public static FastaHandler getInstance() {
+    public static FastaHandler getInstance(File fastaFile, String seqType) throws FileNotFoundException {
         if (instance == null) {
-            instance = new FastaHandler();
+            instance = new FastaHandler(fastaFile, seqType);
         }
         return instance;
     }
@@ -55,6 +59,10 @@ public class FastaHandler {
         return seqType;
     }
 
+    public void addFastaEntrys(File fasta, String type) throws FileNotFoundException {
+        this.parseFasta(fasta, type);
+    }
+
     /**
      * This Method reads the input file and fill all necessary Objects with the informations needed, for further
      * calculations.
@@ -62,13 +70,14 @@ public class FastaHandler {
      * @param fasta The choosen fasta input file
      * @throws FileNotFoundException Path of the input file is incorrect
      */
-    public void parseFasta(File fasta, String type) throws FileNotFoundException {
+    private void parseFasta(File fasta, String type) throws FileNotFoundException {
 
         SequenceType seqType = getSequenceType(type);
 
         // Creating necessary objects for parsing
         Scanner fastaReader = new Scanner(fasta);
         StringBuilder sequenceHandler = new StringBuilder();
+        int tmpHash;
 
         int headerCounter = -1;
 
@@ -81,10 +90,17 @@ public class FastaHandler {
                     // tmp object is created here and saved in entryList. The object gets destroyed if logically
                     // new object is found for creating in the file.
                     FastaEntry tmpEntry = new FastaEntry(fastaLine);
+                    tmpHash = tmpEntry.hashCode();
                     this.entryList.add(tmpEntry);
 
+
                     if (headerCounter != -1) {
-                        this.entryList.get(headerCounter).settingSequenceProperties(sequenceHandler.toString(), seqType);
+                        for(FastaEntry entry: this.entryList){
+                            if (entry.hashCode() == tmpHash){
+                                entry.settingSequenceProperties(sequenceHandler.toString(), seqType);
+                            }
+                        }
+                        // this.entryList.get(headerCounter).settingSequenceProperties(sequenceHandler.toString(), seqType);
                     }
                     // clear sequenceHandler after every entry discovered and update headerCounter
                     sequenceHandler = new StringBuilder();
