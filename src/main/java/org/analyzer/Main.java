@@ -6,8 +6,7 @@ import java.io.FileNotFoundException;
 import org.apache.commons.cli.*;
 
 /**
- * Main logic for analyzing the fasta file, its only needes to call the FastaHandler methods here.
- * All the calculations are been done automatically in the background.
+ * Runnable Main Method for the FastaAnlyzer
  *
  * @author Daniel Tischler 6064795
  * @version JDK 1.7, 03.05.2023
@@ -15,6 +14,9 @@ import org.apache.commons.cli.*;
 
 public class Main {
     /**
+     * Main Logic for the FastaAnalyzer. class only needs to get instantiated with the File to analyse and the
+     * corresponding Sequence Type
+     *
      * @param args arguments given to the main from the CLI, these getting parsed by commons-cli
      * @throws FileNotFoundException incorrect filepath
      * @throws ParseException        incorrect CLI param statements

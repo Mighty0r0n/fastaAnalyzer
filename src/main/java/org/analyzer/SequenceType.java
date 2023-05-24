@@ -2,6 +2,7 @@ package org.analyzer;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 
 /**
  * Enum class for setting the sequence type and needed for the calculations in this package.
@@ -53,6 +54,13 @@ public enum SequenceType {
         return new HashMap<>();
     }
 
+    /**
+     * Calculation for gC enrichment. (g + c) / sequenceLength
+     *
+     * @param sequenceLength length of the inputSequence
+     * @param alphabetCount  Count of each char occurrence in the inputSequence
+     * @return value of the calculation
+     */
     double gcEnrichment(int sequenceLength, Map<Character, Double> alphabetCount) {
         switch (this) {
             case DNA, RNA -> {
@@ -66,6 +74,13 @@ public enum SequenceType {
 
     }
 
+    /**
+     * Calculation for gC enrichment. Summation of molecular Weights of all occurring Chars of the Alphabet from the
+     * Input Sequence.
+     *
+     * @param alphabetCount Count of each char occurrence in the inputSequence
+     * @return value of the calculation
+     */
     double molecularWeight(Map<Character, Double> alphabetCount) {
         switch (this) {
             case DNA, RNA -> {
@@ -86,98 +101,106 @@ public enum SequenceType {
 
     }
 
+    /**
+     * Calculation for gC enrichment.
+     * For Sequences short than 14:
+     * (A+T)*2+(G+C)*4
+     * for longer then 14:
+     * 64.9 + ( (g + c) -16.4 / seqLength)
+     *
+     * @param seqLength     length of the inputSequence
+     * @param alphabetCount Count of each char occurrence in the inputSequence
+     * @return the meting Point of the Sequence
+     */
     double meltingPoint(int seqLength, Map<Character, Double> alphabetCount) {
 
-        switch (this) {
-            case PEPTIDE -> {
-                return 0.0;
-            }
-            case DNA -> {
-                double meltingPoint;
-                if (seqLength < 14) {
-                    meltingPoint = (((alphabetCount.get('A') != null) ? alphabetCount.get('A') : 0.0) +
-                            ((alphabetCount.get('T') != null) ? alphabetCount.get('T') : 0.0)) * 2 +
-                            (((alphabetCount.get('G') != null) ? alphabetCount.get('G') : 0.0) +
-                                    ((alphabetCount.get('C') != null) ? alphabetCount.get('C') : 0.0)) * 4;
-                } else {
-                    meltingPoint = 64.9 + ((41 * (((alphabetCount.get('G') != null) ? alphabetCount.get('G') : 0.0) +
-                            ((alphabetCount.get('C') != null) ? alphabetCount.get('C') : 0.0) - 16.4)) / seqLength);
-                }
-
-                return meltingPoint;
-            }
-            default -> {
-                return 0.0;
+        if (this == SequenceType.DNA) {
+            double meltingPoint;
+            if (seqLength < 14) {
+                meltingPoint = (((alphabetCount.get('A') != null) ? alphabetCount.get('A') : 0.0) +
+                        ((alphabetCount.get('T') != null) ? alphabetCount.get('T') : 0.0)) * 2 +
+                        (((alphabetCount.get('G') != null) ? alphabetCount.get('G') : 0.0) +
+                                ((alphabetCount.get('C') != null) ? alphabetCount.get('C') : 0.0)) * 4;
+            } else {
+                meltingPoint = 64.9 + ((41 * (((alphabetCount.get('G') != null) ? alphabetCount.get('G') : 0.0) +
+                        ((alphabetCount.get('C') != null) ? alphabetCount.get('C') : 0.0) - 16.4)) / seqLength);
             }
 
+            return meltingPoint;
         }
+        return 0.0;
     }
 
     private double netChargeFractionNTerm(Character aminoAcid, Map<Character, Double> peptideCount, Double pH) {
-        return ((peptideCount.get(aminoAcid) != null) ? peptideCount.get(aminoAcid) *
+        return ((peptideCount.get(aminoAcid) != null) ? peptideCount.get(aminoAcid) : 0.0) *
                 ((Math.pow(10, this.molecularWeights.get(aminoAcid))) /
-                        (Math.pow(10, pH) + Math.pow(10, this.molecularWeights.get(aminoAcid)))) : 0.0);
+                        (Math.pow(10, pH) + Math.pow(10, this.molecularWeights.get(aminoAcid))));
     }
 
     private double netChargeFractionCTerm(Character aminoAcid, Map<Character, Double> peptideCount, Double pH) {
-        return ((peptideCount.get(aminoAcid) != null) ? peptideCount.get(aminoAcid) *
+        return ((peptideCount.get(aminoAcid) != null) ? peptideCount.get(aminoAcid) : 0.0) *
                 ((Math.pow(10, pH)) /
-                        (Math.pow(10, pH) + Math.pow(10, this.molecularWeights.get(aminoAcid)))) : 0.0);
+                        (Math.pow(10, pH) + Math.pow(10, this.molecularWeights.get(aminoAcid))));
     }
 
+    /**
+     * Calculates the netCharge for a Peptide Sequence.
+     *
+     * @param peptideCount Count of each occurring Peptide in the Sequence
+     * @param pH           pH to calculate netCharge. Usually 7.
+     * @return the netCharge value
+     */
     double netCharge(Map<Character, Double> peptideCount, Double pH) {
 
-        switch (this) {
-            case DNA -> {
-                return 0.0;
+        if (this == SequenceType.PEPTIDE) {
+            Character[] nTermAminoAcids = {'+', 'R', 'K', 'H'};
+            Character[] cTermAminoAcids = {'-', 'D', 'E', 'C', 'Y'};
+            Map<Character, Double> termini = new HashMap<>();
+            termini.put('+', 1.0);
+            termini.put('-', 1.0);
+
+            double nTermSum = this.netChargeFractionNTerm('+', termini, pH);
+
+            for (Character amino : nTermAminoAcids) {
+                nTermSum += this.netChargeFractionNTerm(amino, peptideCount, pH);
             }
-            case PEPTIDE -> {
-                Character[] nTermAminoAcids = {'+', 'R', 'K', 'H'};
-                Character[] cTermAminoAcids = {'-', 'D', 'E', 'C', 'Y'};
-                Map<Character, Double> termini = new HashMap<>();
-                termini.put('+', 1.0);
-                termini.put('-', 1.0);
 
-                double nTermSum = this.netChargeFractionNTerm('+', termini, pH);
+            double cTermSum = this.netChargeFractionCTerm('-', termini, pH);
 
-                for (Character amino : nTermAminoAcids) {
-                    nTermSum += this.netChargeFractionNTerm(amino, peptideCount, pH);
-                }
-
-                double cTermSum = this.netChargeFractionCTerm('-', termini, pH);
-
-                for (Character amino : cTermAminoAcids) {
-                    cTermSum += this.netChargeFractionCTerm(amino, peptideCount, pH);
-                }
-                return nTermSum - cTermSum;
-
+            for (Character amino : cTermAminoAcids) {
+                cTermSum += this.netChargeFractionCTerm(amino, peptideCount, pH);
             }
-            default -> {
-                return 0.0;
-            }
+            return nTermSum - cTermSum;
+        } else {
+            return 0.0;
         }
+
     }
 
+    /**
+     * Calculation for the Iso-electric Point. At which pH is the netCharge 0? Only for Peptide Sequences.
+     *
+     * @param seqType      Sequence Type enum for the Sequence.
+     * @param peptideCount Count of each occurring Peptide in the Sequence
+     * @param pH           Initial pH for the algorithm. Usually start with 7
+     * @return the value of the pH at which the netCharge = 0
+     */
     double setIsoelectricPoint(SequenceType seqType, Map<Character, Double> peptideCount, double pH) {
         double pHadjusted = pH;
 
-        switch (this) {
-            case PEPTIDE -> {
-                final double tolerance = 0.1;
+        if (Objects.requireNonNull(seqType) == SequenceType.PEPTIDE) {
+            final double tolerance = 0.1;
 
-                double tmpNetCharge = this.netCharge(peptideCount, pH);
-                if (Math.abs(tmpNetCharge) <= tolerance) {
-                    return pHadjusted;
-                } else if (tmpNetCharge > 0) {
-                    pHadjusted = this.setIsoelectricPoint(this, peptideCount, pH + (pH / 2));
-                } else if (tmpNetCharge < 0) {
-                    pHadjusted = this.setIsoelectricPoint(this, peptideCount, pH - (pH / 2));
-                }
-
+            double tmpNetCharge = this.netCharge(peptideCount, pH);
+            if (Math.abs(tmpNetCharge) <= tolerance) {
+                return pHadjusted;
+            } else if (tmpNetCharge > 0) {
+                pHadjusted = this.setIsoelectricPoint(this, peptideCount, pH + (pH / 2));
+            } else if (tmpNetCharge < 0) {
+                pHadjusted = this.setIsoelectricPoint(this, peptideCount, pH - (pH / 2));
             }
-            default -> pHadjusted = 0.0;
-
-
+        } else {
+            pHadjusted = 0.0;
         }
         return pHadjusted;
     }

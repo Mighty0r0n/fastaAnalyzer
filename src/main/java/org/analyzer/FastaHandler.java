@@ -5,7 +5,8 @@ import java.util.*;
 import java.lang.StringBuilder;
 
 /**
- * Public Class which is can be used outside the package, for analyzing the wanted fasta file.
+ * Public Class which can be called public. Methods are hidden inside the Constructor. It's possible to
+ * append more Objects to this Object via the wrapper Function addFastaEntry()
  */
 public class FastaHandler {
     private static FastaHandler instance;
@@ -30,51 +31,55 @@ public class FastaHandler {
     private static SequenceType getSequenceType(String type) {
         SequenceType seqType = SequenceType.AMBIGUOUS;
 
-        // Creating the sequenceType here enables multifile support
+        // Creating the sequenceType here enables multifile support.
         try {
             if (type != null) {
                 seqType = SequenceType.valueOf(type.toUpperCase());
-
             } else {
-
                 System.err.println("""
 
                         No Sequence Type provided. No immediate action required.
                         FastaEntry object are still filled with the seqID the Sequence and translated Sequence(If DNA or RNA),
                         but no further metadata analysis is available from here.\s
-                        Please consider to rerun the Programm and submit the Sequence Type of the Fasta Sequences.""");
+                        Please consider to rerun the Program and submit the Sequence Type of the Fasta Sequences.""");
             }
         } catch (IllegalArgumentException e) {
             System.err.println("""
-                    Valid Sequencetypes:
+                    Valid Sequence types:
                     -DNA
                     -RNA
                     -PEPTIDE
                     -AMBIGUOUS
                                         
-                    If set ambiguous only the objects with the sequences are createt. No metadataanalysis available.
+                    If set ambiguous only the objects with the sequences are created. No metadata analysis available.
                     """);
             e.printStackTrace();
         }
         return seqType;
     }
 
+    /**
+     * Wrapper for the parseFasta() method so it can be used outside the package without direct access rights
+     * to the parser logic and calculation setters.
+     *
+     * @param fasta File to analyze
+     * @param type  Type of the given FastaFile
+     * @throws FileNotFoundException If an invalid FilePath is given as Input an exception is thrown.
+     */
     public void addFastaEntrys(File fasta, String type) throws FileNotFoundException {
         this.parseFasta(fasta, type);
     }
 
     /**
-     * This Method reads the input file and fill all necessary Objects with the informations needed, for further
+     * This Method reads the input file and fill all necessary Objects with the information's needed, for further
      * calculations.
      *
-     * @param fasta The choosen fasta input file
+     * @param fasta The chosen fasta input file
      * @throws FileNotFoundException Path of the input file is incorrect
      */
     private void parseFasta(File fasta, String type) throws FileNotFoundException {
 
         SequenceType seqType = getSequenceType(type);
-
-        // Creating necessary objects for parsing
         Scanner fastaReader = new Scanner(fasta);
         StringBuilder sequenceHandler = new StringBuilder();
 
@@ -86,8 +91,7 @@ public class FastaHandler {
             try {
                 String fastaLine = fastaReader.nextLine();
                 if (fastaLine.startsWith(">")) {
-                    // tmp object is created here and saved in entryList. The object gets destroyed if logically
-                    // new object is found for creating in the file.
+                    // tmp object is created here and saved in entryList.
                     FastaEntry tmpEntry = new FastaEntry(fastaLine);
                     this.entryList.add(tmpEntry);
 
@@ -96,8 +100,6 @@ public class FastaHandler {
                         // forelast when a NEW Object is found.
                         this.entryList.get(this.entryList.size() - 2).settingSequenceProperties(sequenceHandler.toString(), seqType);
                     }
-
-                    // clear sequenceHandler after every entry discovered and update headerCounter
                     sequenceHandler = new StringBuilder();
                     headerCounter++;
                 } else if (fastaLine.startsWith(";")) {
@@ -107,7 +109,9 @@ public class FastaHandler {
 
                 }
             } catch (NoSuchElementException e) {
-                // Needed for adding last entry information to the object with above logic.
+                // Needed for adding last entry information to the object with above logic. Since every Information
+                // is being added when a > is found in lines. The last entry ends with a Sequence, hence no information
+                // is added for this entry.
                 this.entryList.get(this.entryList.size() - 1).settingSequenceProperties(sequenceHandler.toString(), seqType);
                 fastaReader.close();
                 return;
@@ -119,8 +123,9 @@ public class FastaHandler {
     /**
      * Method for generating the output Files. Calculations are done from other classes and are gathered here.
      * 0 values are sorted out
+     * TO-DO -> Implement all metadata and generate new FastaFile for DNA/RNA sequence Types
      *
-     * @param outputPath specifies the path where to place the outputfile
+     * @param outputPath specifies the path where to place the outfile
      */
     public void generateOutputFiles(String outputPath) {
         try (BufferedWriter writer = new BufferedWriter(new FileWriter(outputPath))) {
@@ -141,9 +146,10 @@ public class FastaHandler {
                     writer.write("Net Charge(at ph 7): " + String.format("%.2f", entry.getNetCharge()) + ";");
                 }
                 if (entry.getIsoelectricPoint() != 0.0) {
-                    writer.write("IsoelectricPoint: " + String.format("%.2f", entry.getIsoelectricPoint()) + "pH;");
+                    writer.write("Iso electricPoint: " + String.format("%.2f", entry.getIsoelectricPoint()) + "pH;");
                 }
                 writer.newLine();
+                writer.close();
             }
         } catch (IOException e) {
             e.printStackTrace();

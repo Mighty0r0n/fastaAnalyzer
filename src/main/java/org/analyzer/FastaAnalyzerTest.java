@@ -7,12 +7,18 @@ import java.io.FileNotFoundException;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+/**
+ * First JUnit test, still a bit overwhelming because there are a lot of Methods to use.
+ * Here Objects get created and calculations get compared to hand calculated metadata with help of
+ * the provided Calculators from the Script.
+ * This Test structure don't test all logics, since I already found Errors not get caught here.
+ * But usable for test the calculations.
+ */
 public class FastaAnalyzerTest {
 
     public FastaHandler generateObject() throws FileNotFoundException {
-        FastaHandler testHandler = new FastaHandler(new File("/home/daniel/IdeaProjects/fastaAnalyzer/TestFiles/dna.fasta"), "dna");
 
-        return testHandler;
+        return new FastaHandler(new File("/home/daniel/IdeaProjects/fastaAnalyzer/TestFiles/dna.fasta"), "dna");
     }
 
     @Test

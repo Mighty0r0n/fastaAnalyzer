@@ -5,7 +5,7 @@ import java.util.Map;
 
 
 /**
- * Class that represents one fasta entry and saves matadata about it.
+ * Class that represents one fasta entry and saves metadata about it.
  */
 class FastaEntry implements EntryI {
     public static class SequenceHandler {
@@ -81,7 +81,9 @@ class FastaEntry implements EntryI {
             // Ignoring if DNA or RNA... Still need to handle PEPTIDES
             String sequence = seq.toUpperCase().replaceAll("U", "T");
 
-            // Falls Sequenz nicht durch 3 Teilbar ist und somit nicht jedes k mer überprüft werden kann. Sonst OutOfBoundException. Overhang wird ignoriert.
+            // If a Sequence is not dividable through 3, the functions gets an Out-ofBound Error, since no corresponding
+            // Codon can be found inside the Map for Codon translation. With modulo und subtraction the SeqLength gets
+            // corrected.
             int baseOverhang = sequence.length() % 3;
             int newEnd = sequence.length() - baseOverhang;
             StringBuilder translatedSequence = new StringBuilder();
@@ -102,6 +104,7 @@ class FastaEntry implements EntryI {
             return count;
         }
     }
+
     private final String seqID;
     private String sequence;
     private String translatedSequence;
@@ -137,13 +140,19 @@ class FastaEntry implements EntryI {
     }
 
     /**
-     * Calculates the occurance of a character in a given sequence and saves it into the class field alphabetCount.
+     * Calculates the occurrence of a character in a given sequence and saves it into the class field alphabetCount.
      */
     @Override
     public void calcAlphabet() {
         this.alphabetCount = SequenceHandler.countAlphabet(this.sequence);
     }
 
+    /**
+     * Sets the peptide translation for this Sequence by the SequenceType Enum.
+     * Only available for DNA/RNA sequence types.
+     *
+     * @param seqType SequenceType Enum for the calculation
+     */
     @Override
     public void setTranslatedSequence(SequenceType seqType) {
         switch (seqType) {
@@ -198,7 +207,7 @@ class FastaEntry implements EntryI {
     }
 
     /**
-     * Recursive Logic for getting the isoelectric Point of a sequence.
+     * Recursive Logic for getting the iso electric Point of a sequence.
      *
      * @param seqType SequenceType Enum for the calculation
      * @param pH      Initial pH to start the recursive Function. (typically 7)
@@ -207,25 +216,11 @@ class FastaEntry implements EntryI {
     @Override
     public void setIsoelectricPoint(SequenceType seqType, Double pH) {
 
-        switch (seqType){
+        switch (seqType) {
             case PEPTIDE -> this.isoelectricPoint = seqType.setIsoelectricPoint(seqType, this.alphabetCount, 7.0);
-            case DNA, RNA -> this.isoelectricPoint = SequenceType.PEPTIDE.setIsoelectricPoint(seqType, SequenceHandler.countAlphabet(this.sequence), 7.0);
+            case DNA, RNA ->
+                    this.isoelectricPoint = SequenceType.PEPTIDE.setIsoelectricPoint(seqType, SequenceHandler.countAlphabet(this.sequence), 7.0);
         }
-
-//        switch (seqType) {
-//            case PEPTIDE -> {
-//                final double tolerance = 0.1;
-//                double tmpNetCharge = seqType.netCharge(this.alphabetCount, pH);
-//                if (Math.abs(tmpNetCharge) <= tolerance) {
-//                    this.isoelectricPoint = pH;
-//                } else if (tmpNetCharge > 0) {
-//                    this.setIsoelectricPoint(seqType, pH + (pH / 2));
-//                } else if (tmpNetCharge < 0) {
-//                    this.setIsoelectricPoint(seqType, pH - (pH / 2));
-//                }
-//            }
-//            default -> System.out.println();
-//        }
     }
 
     @Override
@@ -238,6 +233,7 @@ class FastaEntry implements EntryI {
         return this.alphabetCount;
     }
 
+    @Override
     public double getGcEnrichment() {
         return gcEnrichment;
     }
