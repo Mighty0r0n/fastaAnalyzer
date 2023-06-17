@@ -21,7 +21,7 @@ public class Main extends Thread {
      * @throws FileNotFoundException incorrect filepath
      * @throws ParseException        incorrect CLI param statements
      */
-    public static void main(String[] args) throws FileNotFoundException, ParseException, WrongFastaFormatException {
+    public static void main(String[] args) throws FileNotFoundException, ParseException, MalformatedFastaFormatException {
 
         CommandLineParser parser = new DefaultParser();
 
@@ -33,8 +33,7 @@ public class Main extends Thread {
         CommandLine line = parser.parse(options, args);
 
         FastaHandler handler = FastaHandler.getInstance(line.getOptionValue("i"), line.getOptionValue("t"));
-        FastaHandler.getInstance("/home/daniel/IdeaProjects/fastaAnalyzer/TestFiles/test2.fasta");
-        FastaHandler.getInstance("/home/daniel/IdeaProjects/fastaAnalyzer/TestFiles/test2.fasta");
+
 
 
         System.out.println("Programm ist fertig gelaufen. YIPPIE!");

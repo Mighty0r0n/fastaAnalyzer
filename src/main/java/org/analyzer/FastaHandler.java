@@ -17,31 +17,18 @@ public class FastaHandler {
         SequenceType seqType = SequenceType.AMBIGUOUS;
 
         // Creating the sequenceType here enables multifile support.
-        try {
-            if (type != null) {
-                seqType = SequenceType.valueOf(type.toUpperCase());
-            } else {
-                System.err.println("""
 
-                        No Sequence Type provided. No immediate action required.
-                        FastaEntry object are still filled with the seqID the Sequence and translated Sequence(If DNA or RNA),
-                        but no further metadata analysis is available from here.\s
-                        Please consider to rerun the Program and submit the Sequence Type of the Fasta Sequences.""");
-            }
-        } catch (IllegalArgumentException e) {
-            e.printStackTrace();
+        if (type != null) {
+            seqType = SequenceType.valueOf(type.toUpperCase());
+        } else {
             System.err.println("""
-                                        
-                    Valid Sequence types:
-                    -DNA
-                    -RNA
-                    -PEPTIDE
-                    -AMBIGUOUS
-                                        
-                    If none type is specified, the type is set ambiguous automatically. No metadata analysis available there.
-                    """);
 
+                    No Sequence Type provided. No immediate action required.
+                    FastaEntry object are still filled with the seqID the Sequence and translated Sequence(If DNA or RNA),
+                    but no further metadata analysis is available from here.\s
+                    Please consider to rerun the Program and submit the Sequence Type of the Fasta Sequences for further analysis.""");
         }
+
         return seqType;
     }
 
@@ -52,7 +39,7 @@ public class FastaHandler {
      * @param seqType   Sequence type of the input sequence
      * @throws FileNotFoundException if wrong file path is provided
      */
-    FastaHandler(String fastaFile, String seqType) throws FileNotFoundException, WrongFastaFormatException {
+    FastaHandler(String fastaFile, String seqType) throws FileNotFoundException {
         this.parseFasta(fastaFile, seqType);
     }
 
@@ -62,47 +49,47 @@ public class FastaHandler {
      * @param fastaFile File to start analysis with
      * @throws FileNotFoundException if wrong file path is provided
      */
-    FastaHandler(String fastaFile) throws FileNotFoundException, WrongFastaFormatException {
+    FastaHandler(String fastaFile) throws FileNotFoundException {
         this.parseFasta(fastaFile, null);
     }
 
     /**
      * Invoke for singleton
-     * Additional inputfile check, so no dublicate File will be parsed.
+     * Additional inputfile check, so no duplicate File will be parsed.
+     *
      *
      * @param fastaFile Input File for the analysis
      * @param seqType   Sequence Type of the input file
      * @return instance of the class
      * @throws FileNotFoundException If Incorrect File Path is provided
      */
-    public static FastaHandler getInstance(String fastaFile, String seqType) throws FileNotFoundException, WrongFastaFormatException {
+    public static FastaHandler getInstance(String fastaFile, String seqType) throws FileNotFoundException {
         if (instance == null) {
-            instance = new FastaHandler(fastaFile, seqType);
-            instance.fastaFileList.add(fastaFile.split("/")[fastaFile.split("/").length-1]);
 
-        } else if (!instance.fastaFileList.contains(fastaFile.split("/")[fastaFile.split("/").length-1])){
-            instance.addFastaEntrys(fastaFile, seqType);
-            instance.fastaFileList.add(fastaFile.split("/")[fastaFile.split("/").length-1]);
+            instance = new FastaHandler(fastaFile, seqType);
+            instance.fastaFileList.add(fastaFile.split("/")[fastaFile.split("/").length - 1]);
+
+        } else if (!instance.fastaFileList.contains(fastaFile.split("/")[fastaFile.split("/").length - 1])){
+                instance.addFastaEntrys(fastaFile, seqType);
+                instance.fastaFileList.add(fastaFile.split("/")[fastaFile.split("/").length - 1]);
         }
         return instance;
     }
 
     /**
      * Invoke for singleton, without SeqType param. Will be treated as ambigous here
-     * Additional inputfile check, so no dublicate File will be parsed.
+     * Additional inputfile check, so no duplicate File will be parsed.
+     * No input file memory here, so calculations can be redone when provided with sequence type again.
      *
      * @param fastaFile Input File for the analysis
      * @return instance of the class
      * @throws FileNotFoundException If Incorrect File Path is provided
      */
-    public static FastaHandler getInstance(String fastaFile) throws FileNotFoundException, WrongFastaFormatException {
+    public static FastaHandler getInstance(String fastaFile) throws FileNotFoundException {
         if (instance == null) {
             instance = new FastaHandler(fastaFile);
-            instance.fastaFileList.add(fastaFile.split("/")[fastaFile.split("/").length-1]);
-
-        } else if (!instance.fastaFileList.contains(fastaFile.split("/")[fastaFile.split("/").length-1])){
+        } else {
             instance.addFastaEntrys(fastaFile);
-            instance.fastaFileList.add(fastaFile.split("/")[fastaFile.split("/").length-1]);
         }
         return instance;
     }
@@ -115,7 +102,7 @@ public class FastaHandler {
      * @param type  Type of the given FastaFile
      * @throws FileNotFoundException If an invalid FilePath is given as Input an exception is thrown.
      */
-    public void addFastaEntrys(String fasta, String type) throws FileNotFoundException, WrongFastaFormatException {
+    public void addFastaEntrys(String fasta, String type) throws FileNotFoundException {
         this.parseFasta(fasta, type);
     }
 
@@ -126,23 +113,23 @@ public class FastaHandler {
      * @param fasta File to analyze
      * @throws FileNotFoundException If an invalid FilePath is given as Input an exception is thrown.
      */
-    public void addFastaEntrys(String fasta) throws FileNotFoundException, WrongFastaFormatException {
+    public void addFastaEntrys(String fasta) throws FileNotFoundException {
         this.parseFasta(fasta, null);
     }
 
-    private void checkFastaFormat(String fasta) throws FileNotFoundException, WrongFastaFormatException {
+    private void checkFastaFormat(String fasta) throws FileNotFoundException {
         Scanner fastaReader = new Scanner(new File(fasta));
         boolean isFasta = false;
 
-        while (fastaReader.hasNext()){
+        while (fastaReader.hasNext()) {
             String fastaLine = fastaReader.nextLine();
-            if (fastaLine.startsWith(">")){
+            if (fastaLine.startsWith(">")) {
                 isFasta = true;
             }
         }
 
         if (!isFasta) {
-            throw new WrongFastaFormatException();
+            throw new MalformatedFastaFormatException();
         }
 
     }
@@ -154,10 +141,11 @@ public class FastaHandler {
      * @param fasta The chosen fasta input file
      * @throws FileNotFoundException Path of the input file is incorrect
      */
-    private void parseFasta(String fasta, String type) throws FileNotFoundException, WrongFastaFormatException {
+    private void parseFasta(String fasta, String type) throws FileNotFoundException {
 
-        checkFastaFormat(fasta);
+
         SequenceType seqType = getSequenceType(type);
+        checkFastaFormat(fasta);
         Scanner fastaReader = new Scanner(new File(fasta));
         StringBuilder sequenceHandler = new StringBuilder();
 

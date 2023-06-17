@@ -24,6 +24,7 @@ public enum SequenceType {
      * Specifies Enum Type constants and calculations for Ambiguous sequences
      */
     AMBIGUOUS(createAmbiguousMap());
+
     private final Map<Character, Double> molecularWeights;
 
     SequenceType(Map<Character, Double> molecularWeights) {
