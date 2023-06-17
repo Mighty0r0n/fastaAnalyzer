@@ -11,7 +11,7 @@ class FastaEntry implements EntryI {
     /**
      * Static Class for Sequence manipulation in context of nucleotype or peptide sequences
      */
-    public static class SequenceHandler {
+    static class SequenceHandler {
         private static final Map<String, Character> codonMap = createCodonMap();
 
         private static Map<String, Character> createCodonMap() {

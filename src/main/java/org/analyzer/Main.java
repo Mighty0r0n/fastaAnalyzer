@@ -1,6 +1,6 @@
 package org.analyzer;
 
-import java.io.File;
+
 import java.io.FileNotFoundException;
 
 import org.apache.commons.cli.*;
@@ -12,7 +12,7 @@ import org.apache.commons.cli.*;
  * @version JDK 1.7, 03.05.2023
  */
 
-public class Main {
+public class Main extends Thread {
     /**
      * Main Logic for the FastaAnalyzer. class only needs to get instantiated with the File to analyse and the
      * corresponding Sequence Type
@@ -21,7 +21,7 @@ public class Main {
      * @throws FileNotFoundException incorrect filepath
      * @throws ParseException        incorrect CLI param statements
      */
-    public static void main(String[] args) throws FileNotFoundException, ParseException {
+    public static void main(String[] args) throws FileNotFoundException, ParseException, WrongFastaFormatException {
 
         CommandLineParser parser = new DefaultParser();
 
@@ -32,9 +32,10 @@ public class Main {
 
         CommandLine line = parser.parse(options, args);
 
-        FastaHandler handler = FastaHandler.getInstance(new File(line.getOptionValue("i")));
-        handler.addFastaEntrys(new File("/home/daniel/IdeaProjects/fastaAnalyzer/TestFiles/test2.fasta"));
-        handler.generateOutputFiles(line.getOptionValue("o"));
+        FastaHandler handler = FastaHandler.getInstance(line.getOptionValue("i"), line.getOptionValue("t"));
+        FastaHandler.getInstance("/home/daniel/IdeaProjects/fastaAnalyzer/TestFiles/test2.fasta");
+        FastaHandler.getInstance("/home/daniel/IdeaProjects/fastaAnalyzer/TestFiles/test2.fasta");
+
 
         System.out.println("Programm ist fertig gelaufen. YIPPIE!");
     }
