@@ -25,7 +25,6 @@ public class FastaHandler {
      */
     public static FastaHandler getInstance(String fastaFile, String seqType) throws FileNotFoundException {
         if (instance == null) {
-
             instance = new FastaHandler(fastaFile, seqType);
             instance.fastaFileList.add(fastaFile.split("/")[fastaFile.split("/").length - 1]);
 
