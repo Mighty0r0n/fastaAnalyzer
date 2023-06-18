@@ -6,17 +6,18 @@ import java.lang.StringBuilder;
 import java.util.regex.Pattern;
 
 /**
- * Class for handling the FastaEntrys. Methods are hidden inside the Constructor. It's possible to
+ * Class for handling the FastaEntry's. Methods are hidden inside the Constructor. It's possible to
  * append more Objects to this Object via the wrapper Function addFastaEntry()
  */
 public class FastaHandler {
-    LinkedList<FastaEntry> entryList = new LinkedList<>();
+    Map<String, LinkedList<FastaEntry>> fastaMap = new HashMap<>();
+
     LinkedList<String> fastaFileList = new LinkedList<>();
     private static FastaHandler instance;
 
     /**
      * Invoke for singleton
-     * Additional inputfile check, so no duplicate File will be parsed.
+     * Additional input file check, so no duplicate File will be parsed.
      *
      * @param fastaFile Input File for the analysis
      * @param seqType   Sequence Type of the input file
@@ -24,20 +25,21 @@ public class FastaHandler {
      * @throws FileNotFoundException If Incorrect File Path is provided
      */
     public static FastaHandler getInstance(String fastaFile, String seqType) throws FileNotFoundException {
+        String filename = fastaFile.split("/")[fastaFile.split("/").length - 1];
         if (instance == null) {
             instance = new FastaHandler(fastaFile, seqType);
-            instance.fastaFileList.add(fastaFile.split("/")[fastaFile.split("/").length - 1]);
+            instance.fastaFileList.add(filename);
 
-        } else if (!instance.fastaFileList.contains(fastaFile.split("/")[fastaFile.split("/").length - 1])) {
-            instance.addFastaEntrys(fastaFile, seqType);
-            instance.fastaFileList.add(fastaFile.split("/")[fastaFile.split("/").length - 1]);
+        } else if (!instance.fastaFileList.contains(filename)) {
+            instance.addFastaEntry(fastaFile, seqType);
+            instance.fastaFileList.add(filename);
         }
         return instance;
     }
 
     /**
-     * Invoke for singleton, without SeqType param. Will be treated as ambigous here
-     * Additional inputfile check, so no duplicate File will be parsed.
+     * Invoke for singleton, without SeqType param. Will be treated as ambiguous here
+     * Additional input file check, so no duplicate File will be parsed.
      * No input file memory here, so calculations can be redone when provided with sequence type again.
      *
      * @param fastaFile Input File for the analysis
@@ -45,10 +47,14 @@ public class FastaHandler {
      * @throws FileNotFoundException If Incorrect File Path is provided
      */
     public static FastaHandler getInstance(String fastaFile) throws FileNotFoundException {
+        String filename = fastaFile.split("/")[fastaFile.split("/").length - 1].split("\\.")[0] + "-ambiguous.fasta";
         if (instance == null) {
             instance = new FastaHandler(fastaFile);
-        } else {
-            instance.addFastaEntrys(fastaFile);
+            instance.fastaFileList.add(filename);
+
+        } else if (!instance.fastaFileList.contains(filename)) {
+            instance.addFastaEntry(fastaFile);
+            instance.fastaFileList.add(filename);
         }
         return instance;
     }
@@ -83,9 +89,7 @@ public class FastaHandler {
      * @param type  Type of the given FastaFile
      * @throws FileNotFoundException If an invalid FilePath is given as Input an exception is thrown.
      */
-
-
-    public void addFastaEntrys(String fasta, String type) throws FileNotFoundException {
+    public void addFastaEntry(String fasta, String type) throws FileNotFoundException {
         this.parseFasta(fasta, type);
     }
 
@@ -96,8 +100,152 @@ public class FastaHandler {
      * @param fasta File to analyze
      * @throws FileNotFoundException If an invalid FilePath is given as Input an exception is thrown.
      */
-    public void addFastaEntrys(String fasta) throws FileNotFoundException {
+    public void addFastaEntry(String fasta) throws FileNotFoundException {
         this.parseFasta(fasta, null);
+    }
+
+    private String insertLineBreaks(String input) {
+        StringBuilder printableSequence = new StringBuilder();
+
+        int currentIndex = 0;
+        while (currentIndex < input.length()) {
+            int endIndex = Math.min(currentIndex + 70, input.length());
+            printableSequence.append(input, currentIndex, endIndex);
+
+            if (endIndex < input.length()) {
+                printableSequence.append("\n");
+            }
+
+            currentIndex = endIndex;
+        }
+
+        return printableSequence.toString();
+    }
+
+    private SequenceType getSequenceType(String type, String filename) {
+        SequenceType seqType = SequenceType.AMBIGUOUS;
+
+        // Creating the sequenceType here enables multi file support.
+
+        if (type != null) {
+            try {
+                seqType = SequenceType.valueOf(type.toUpperCase());
+            } catch (IllegalArgumentException iae) {
+                System.err.println("Invalid sequence type. \nGiven sequence type: " + type + """          
+                        \nValid Sequence types:
+                                        -DNA
+                                        -RNA
+                                        -PEPTIDE
+                                        -AMBIGUOUS
+                                        
+                        Sequence type is set to ambiguous, but consider to rerun the program.
+                        On ambiguous sequences are no further metadata analysis besides sequence translation
+                        possible.
+                          """);
+            }
+        } else {
+            System.err.println("""
+
+                    No Sequence Type provided. No immediate action required.
+                    FastaEntry object are still filled with the seqID the Sequence and translated Sequence(If DNA or RNA),
+                    but no further metadata analysis is available from here.\s
+                    Please consider to rerun the Program and submit the Sequence Type of the Fasta Sequences for further analysis.""" + "\nFile is saved as: " + filename.split("\\.")[0] + "-ambiguous.fasta in the FastaHandler");
+        }
+
+        return seqType;
+    }
+
+    /**
+     * This Method reads the input file and fill all necessary Objects with the information's needed, for further
+     * calculations.
+     *
+     * @param fasta The chosen fasta input file
+     * @throws FileNotFoundException Path of the input file is incorrect
+     */
+    private void parseFasta(String fasta, String type) throws FileNotFoundException {
+
+
+        String filename = fasta.split("/")[fasta.split("/").length - 1];
+        LinkedList<FastaEntry> entryList = new LinkedList<>();
+        SequenceType seqType = getSequenceType(type, filename);
+        checkFastaFormat(fasta, seqType);
+        StringBuilder sequenceHandler = new StringBuilder();
+        Scanner fastaReader = new Scanner(new File(fasta));
+
+        int headerCounter = -1;
+
+        // main parsing logic. Object is creating when header line is found and is filled line by line with
+        // all the needed information here
+
+        while (fastaReader.hasNext()) {
+            String fastaLine2 = fastaReader.nextLine().trim();
+            if (fastaLine2.startsWith(">")) {
+                FastaEntry tmpEntry = new FastaEntry(fastaLine2);
+                entryList.add(tmpEntry);
+
+                if (headerCounter != -1) {
+                    // For getting the fore last entry in the entryList because this logic appends the sequence of the
+                    // fore last when a NEW Object is found.
+                    entryList.get(entryList.size() - 2).settingSequenceProperties(sequenceHandler.toString(), seqType);
+                }
+                sequenceHandler = new StringBuilder();
+                headerCounter++;
+            } else if (fastaLine2.startsWith(";")) {
+                System.out.println("Fasta contains comment lines, this parser is ignoring them.");
+            } else {
+                sequenceHandler.append(fastaLine2.toUpperCase());
+            }
+        }
+        entryList.get(entryList.size() - 1).settingSequenceProperties(sequenceHandler.toString(), seqType);
+
+        setFastaMap(filename, entryList, seqType);
+    }
+
+
+    private void setFastaMap(String filename, LinkedList<FastaEntry> entryList, SequenceType seqType) {
+        if (Objects.requireNonNull(seqType) == SequenceType.AMBIGUOUS) {
+            fastaMap.put(filename.split("\\.")[0] + "-ambiguous.fasta", entryList);
+        } else {
+            fastaMap.put(filename, entryList);
+        }
+    }
+
+    /**
+     * Generates an output file for every parsed file. Includes metadata inside the comment bracket of the fasta
+     *
+     * @param outputDirectory specifies the Directory where the files are saved to
+     */
+    public void generateOutputFiles(String outputDirectory) {
+        for (String inFile : this.fastaMap.keySet()) {
+            String outFile = inFile.split("\\.")[0] + "_analyzed.fasta";
+            try (BufferedWriter writer = new BufferedWriter(new FileWriter(outputDirectory + outFile))) {
+                for (FastaEntry entry : this.fastaMap.get(inFile)) {
+                    writer.write(entry.getSeqID());
+                    writer.newLine();
+                    writer.write(";Sequence Length: " + entry.getSequenceLength() + "\t");
+                    if (entry.getMolecularWeight() != 0.0) {
+                        writer.write("Molecular Weight: " + String.format("%.2f", entry.getMolecularWeight()) + "g/mole\t");
+                    }
+                    if (entry.getMeltingPoint() != 0.0) {
+                        writer.write("Melting Point: " + String.format("%.2f", entry.getMeltingPoint()) + "°C\t");
+                    }
+                    if (entry.getGcEnrichment() != 0.0) {
+                        writer.write("GC Enrichment: " + String.format("%.2f", entry.getGcEnrichment() * 100) + "%\t");
+                    }
+                    if (entry.getNetCharge() != 0.0) {
+                        writer.write("Net Charge(at ph 7): " + String.format("%.2f", entry.getNetCharge()) + "\t");
+                    }
+                    if (entry.getIsoelectricPoint() != 0.0) {
+                        writer.write("Iso electricPoint: " + String.format("%.2f", entry.getIsoelectricPoint()) + "pH\t");
+                    }
+                    writer.newLine();
+                    writer.write((entry.getTranslatedSequence() == null) ? insertLineBreaks(entry.getSequence()) : insertLineBreaks(entry.getTranslatedSequence()));
+                    writer.newLine();
+                }
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
     }
 
     private void checkSequenceType(SequenceType seqtype, String sequence) {
@@ -114,7 +262,7 @@ public class FastaHandler {
             }
             case PEPTIDE -> {
 
-                // In general peptides doesnt contain less then 4 unique amino acids in a peptide chain
+                // In general peptides doesn't contain less than 4 unique amino acids in a peptide chain
                 // so this is for differentiate between DNA/RNA and peptides better
                 if (!Pattern.matches("[ACDEFGHIKLMNPQRSTVWY]+", sequence) || sequence.chars().distinct().count() <= 4) {
                     throw new WrongSequenceTypeException("Sequence doesn't look like a Peptide sequence");
@@ -131,7 +279,7 @@ public class FastaHandler {
 
     /**
      * Method for checking the format of the Input Fasta-File. Checks for alternating Header Sequence pairs
-     * and checks the alphabet of the given input sequence. Throws Errors if the File is not formated
+     * and checks the alphabet of the given input sequence. Throws Errors if the File is not formatted
      * correctly.
      *
      * @param fasta   input file that needs to be checked
@@ -156,134 +304,23 @@ public class FastaHandler {
             }
 
             if (line.startsWith(">")) {
-                checkHeaderStructure(inHeader, sequenceID);
+                if (inHeader) {
+                    throw new MalformatedFastaFileException("Invalid format: Missing sequence for " + sequenceID);
+                }
                 inHeader = true;
                 headerCount++;
                 sequenceID = line;
             } else if (line.startsWith(";") || line.isEmpty()) {
-
             } else if (inHeader) {
                 checkSequenceType(seqType, line.toUpperCase());
                 inSequence = true;
             }
         }
-
-        checklastSequence(inSequence, sequenceID);
-        checkMissingHeader(headerCount, sequenceID);
-    }
-
-    private void checklastSequence(boolean inSequence, String sequenceID) {
         if (!inSequence) {
             throw new MalformatedFastaFileException("Invalid format: Last sequence ID: " + sequenceID + " has no sequence");
         }
-    }
-
-    private void checkMissingHeader(int headerCount, String sequenceID) {
         if (headerCount == 0) {
             throw new MalformatedFastaFileException("Invalid format: " + sequenceID);
-        }
-    }
-
-    private void checkHeaderStructure(boolean inHeader, String sequenceID) {
-        if (inHeader) {
-            throw new MalformatedFastaFileException("Invalid format: Missing sequence for " + sequenceID);
-        }
-    }
-
-    private SequenceType getSequenceType(String type) {
-        SequenceType seqType = SequenceType.AMBIGUOUS;
-
-        // Creating the sequenceType here enables multifile support.
-
-        if (type != null) {
-            seqType = SequenceType.valueOf(type.toUpperCase());
-        } else {
-            System.err.println("""
-
-                    No Sequence Type provided. No immediate action required.
-                    FastaEntry object are still filled with the seqID the Sequence and translated Sequence(If DNA or RNA),
-                    but no further metadata analysis is available from here.\s
-                    Please consider to rerun the Program and submit the Sequence Type of the Fasta Sequences for further analysis.""");
-        }
-
-        return seqType;
-    }
-
-    /**
-     * This Method reads the input file and fill all necessary Objects with the information's needed, for further
-     * calculations.
-     *
-     * @param fasta The chosen fasta input file
-     * @throws FileNotFoundException Path of the input file is incorrect
-     */
-    private void parseFasta(String fasta, String type) throws FileNotFoundException {
-
-        SequenceType seqType = getSequenceType(type);
-        checkFastaFormat(fasta, seqType);
-
-        StringBuilder sequenceHandler = new StringBuilder();
-
-        Scanner fastaReader = new Scanner(new File(fasta));
-
-        int headerCounter = -1;
-
-        // main parsing logic. Object is creating when header line is found and is filled line by line with
-        // all the needed information here
-
-        while (fastaReader.hasNext()) {
-            String fastaLine2 = fastaReader.nextLine().trim();
-            if (fastaLine2.startsWith(">")) {
-                FastaEntry tmpEntry = new FastaEntry(fastaLine2);
-                this.entryList.add(tmpEntry);
-
-                if (headerCounter != -1) {
-                    // For getting the forelast entry in the entryList because this logic appends the sequence of the
-                    // forelast when a NEW Object is found.
-                    this.entryList.get(this.entryList.size() - 2).settingSequenceProperties(sequenceHandler.toString(), seqType);
-                }
-                sequenceHandler = new StringBuilder();
-                headerCounter++;
-            } else if (fastaLine2.startsWith(";")) {
-                System.out.println("Fasta contains commentlines, this parser is ignoring them.");
-            } else {
-                sequenceHandler.append(fastaLine2.toUpperCase());
-            }
-        }
-        this.entryList.get(this.entryList.size() - 1).settingSequenceProperties(sequenceHandler.toString(), seqType);
-    }
-
-    /**
-     * Method for generating the output Files. Calculations are done from other classes and are gathered here.
-     * 0 values are sorted out
-     * TO-DO -> Implement all metadata and generate new FastaFile for DNA/RNA sequence Types
-     *
-     * @param outputPath specifies the path where to place the outfile
-     */
-    public void generateOutputFiles(String outputPath) {
-        try (BufferedWriter writer = new BufferedWriter(new FileWriter(outputPath))) {
-            for (FastaEntry entry : this.entryList) {
-                writer.write("Sequence ID: " + entry.getSeqID());
-                writer.newLine();
-                writer.write("Sequence Length: " + entry.getSequenceLength() + ";");
-                if (entry.getMolecularWeight() != 0.0) {
-                    writer.write("Molecular Weight: " + String.format("%.2f", entry.getMolecularWeight()) + "g/mole;");
-                }
-                if (entry.getMeltingPoint() != 0.0) {
-                    writer.write("Melting Point: " + String.format("%.2f", entry.getMeltingPoint()) + "°C;");
-                }
-                if (entry.getGcEnrichment() != 0.0) {
-                    writer.write("GC Enrichment: " + String.format("%.2f", entry.getGcEnrichment() * 100) + "%;");
-                }
-                if (entry.getNetCharge() != 0.0) {
-                    writer.write("Net Charge(at ph 7): " + String.format("%.2f", entry.getNetCharge()) + ";");
-                }
-                if (entry.getIsoelectricPoint() != 0.0) {
-                    writer.write("Iso electricPoint: " + String.format("%.2f", entry.getIsoelectricPoint()) + "pH;");
-                }
-                writer.newLine();
-            }
-        } catch (IOException e) {
-            e.printStackTrace();
         }
     }
 }

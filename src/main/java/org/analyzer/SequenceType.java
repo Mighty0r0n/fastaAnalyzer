@@ -152,7 +152,6 @@ public enum SequenceType {
      */
     double netCharge(Map<Character, Double> peptideCount, Double pH) {
 
-
         if (this == SequenceType.PEPTIDE) {
             Character[] nTermAminoAcids = {'+', 'R', 'K', 'H'};
             Character[] cTermAminoAcids = {'-', 'D', 'E', 'C', 'Y'};
@@ -175,7 +174,6 @@ public enum SequenceType {
         } else {
             return 0.0;
         }
-
     }
 
     /**
