@@ -21,7 +21,7 @@ public class Main extends Thread {
      * @throws FileNotFoundException incorrect filepath
      * @throws ParseException        incorrect CLI param statements
      */
-    public static void main(String[] args) throws FileNotFoundException, ParseException, MalformatedFastaFormatException {
+    public static void main(String[] args) throws FileNotFoundException, ParseException, MalformatedFastaFileException {
 
         CommandLineParser parser = new DefaultParser();
 
