@@ -117,23 +117,45 @@ public class FastaHandler {
         this.parseFasta(fasta, null);
     }
 
+    private static void checkSequenceType(SequenceType seqtype, String sequence) {
+        switch (seqtype) {
+            case DNA -> {
+                if (!Pattern.matches("[ATGC]+", sequence)) {
+                    throw new WrongSequenceTypeException("Sequence doesn't look like a DNA sequence");
+                }
+            }
+            case RNA -> {
+                if (!Pattern.matches("[AUGC]+", sequence)) {
+                    throw new WrongSequenceTypeException("Sequence doesn't look like a RNA sequence");
+                }
+            }
+            case PEPTIDE -> {
+
+                // In general peptides doesnt contain less then 4 unique amino acids in a peptide chain
+                // so this is for differentiate between DNA/RNA and peptides better
+                if (!Pattern.matches("[ACDEFGHIKLMNPQRSTVWY]+", sequence) || sequence.chars().distinct().count() <= 4) {
+                    throw new WrongSequenceTypeException("Sequence doesn't look like a Peptide sequence");
+                }
+            }
+            case AMBIGUOUS -> {
+                // allows all possible Characters in DNA, RNA and Peptides, but nothing more
+                if (!Pattern.matches("[ACDEFGHIKLMNPQRSTVWYU]+", sequence)) {
+                    throw new WrongSequenceTypeException("Sequence type doesn't look like any sequence at all");
+                }
+            }
+        }
+    }
+
     /**
      * Method for checking the format of the Input Fasta-File. Checks for alternating Header Sequence pairs
      * and checks the alphabet of the given input sequence. Throws Errors if the File is not formated
      * correctly.
      *
-     * @param fasta input file that needs to be checked
+     * @param fasta   input file that needs to be checked
      * @param seqType the corresponding sequence type of the input file, for getting the alphabet of the sequence
      * @throws FileNotFoundException if the input file does not exist
      */
     public static void checkFastaFormat(String fasta, SequenceType seqType) throws FileNotFoundException {
-        String pattern = switch (seqType) {
-            case DNA -> "[ATGC]+";
-            case RNA -> "[AUGC]+";
-            case PEPTIDE -> "[ACDEFGHIKLMNPQRSTVWY]+";
-            case AMBIGUOUS -> "[ACDEFGHIKLMNPQRSTVWYU]+";
-        };
-
 
         Scanner fastaReader = new Scanner(new File(fasta));
         boolean inHeader = false;
@@ -155,18 +177,16 @@ public class FastaHandler {
                 inHeader = true;
                 headerCount++;
                 sequenceID = line;
-            } else if (line.startsWith(";")) {
+            } else if (line.startsWith(";") || line.isEmpty()) {
 
             } else if (inHeader) {
-                checkSequence(pattern, sequenceID, line);
+                checkSequenceType(seqType, line.toUpperCase());
                 inSequence = true;
             }
         }
 
         checklastSequence(inSequence, sequenceID);
         checkMissingHeader(headerCount, sequenceID);
-
-
     }
 
     private static void checklastSequence(boolean inSequence, String sequenceID) {
@@ -187,12 +207,6 @@ public class FastaHandler {
         }
     }
 
-    private static void checkSequence(String pattern, String sequenceID, String line) {
-        if (!Pattern.matches(pattern, line.toUpperCase())) {
-            throw new CorruptedSequenceException("Invalid format for header: " + sequenceID + ", Invalid characters in the sequence line");
-        }
-    }
-
     /**
      * This Method reads the input file and fill all necessary Objects with the information's needed, for further
      * calculations.
@@ -201,7 +215,6 @@ public class FastaHandler {
      * @throws FileNotFoundException Path of the input file is incorrect
      */
     private void parseFasta(String fasta, String type) throws FileNotFoundException {
-
 
         SequenceType seqType = getSequenceType(type);
         checkFastaFormat(fasta, seqType);
@@ -215,39 +228,26 @@ public class FastaHandler {
         // main parsing logic. Object is creating when header line is found and is filled line by line with
         // all the needed information here
 
+        while (fastaReader.hasNext()) {
+            String fastaLine2 = fastaReader.nextLine().trim();
+            if (fastaLine2.startsWith(">")) {
+                FastaEntry tmpEntry = new FastaEntry(fastaLine2);
+                this.entryList.add(tmpEntry);
 
-        for (; ; ) {
-            try {
-                String fastaLine = fastaReader.nextLine().trim();
-                if (fastaLine.startsWith(">")) {
-                    // tmp object is created here and saved in entryList.
-                    FastaEntry tmpEntry = new FastaEntry(fastaLine);
-                    this.entryList.add(tmpEntry);
-
-                    if (headerCounter != -1) {
-                        // For getting the forelast entry in the entryList because this logic appends the sequence of the
-                        // forelast when a NEW Object is found.
-                        this.entryList.get(this.entryList.size() - 2).settingSequenceProperties(sequenceHandler.toString(), seqType);
-                    }
-                    sequenceHandler = new StringBuilder();
-                    headerCounter++;
-                } else if (fastaLine.startsWith(";")) {
-                    System.out.println("Fasta contains commentlines, this parser is ignoring them.");
-                } else {
-                    sequenceHandler.append(fastaLine.toUpperCase());
-
+                if (headerCounter != -1) {
+                    // For getting the forelast entry in the entryList because this logic appends the sequence of the
+                    // forelast when a NEW Object is found.
+                    this.entryList.get(this.entryList.size() - 2).settingSequenceProperties(sequenceHandler.toString(), seqType);
                 }
-            } catch (NoSuchElementException e) {
-                // Needed for adding last entry information to the object with above logic. Since every Information
-                // is being added when a > is found in lines. The last entry ends with a Sequence, hence no information
-                // is added for this entry.
-                this.entryList.get(this.entryList.size() - 1).settingSequenceProperties(sequenceHandler.toString(), seqType);
-                fastaReader.close();
-                return;
+                sequenceHandler = new StringBuilder();
+                headerCounter++;
+            } else if (fastaLine2.startsWith(";")) {
+                System.out.println("Fasta contains commentlines, this parser is ignoring them.");
+            } else {
+                sequenceHandler.append(fastaLine2.toUpperCase());
             }
-
         }
-
+        this.entryList.get(this.entryList.size() - 1).settingSequenceProperties(sequenceHandler.toString(), seqType);
     }
 
     /**

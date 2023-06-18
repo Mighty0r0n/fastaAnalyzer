@@ -77,8 +77,7 @@ public enum SequenceType {
     double gcEnrichment(int sequenceLength, Map<Character, Double> alphabetCount) {
         switch (this) {
             case DNA, RNA -> {
-                return (((alphabetCount.get('G') != null) ? alphabetCount.get('G') : 0.0) +
-                        ((alphabetCount.get('C') != null) ? alphabetCount.get('C') : 0.0)) / sequenceLength;
+                return (((alphabetCount.get('G') != null) ? alphabetCount.get('G') : 0.0) + ((alphabetCount.get('C') != null) ? alphabetCount.get('C') : 0.0)) / sequenceLength;
             }
             default -> {
                 return 0.0;
@@ -101,11 +100,7 @@ public enum SequenceType {
                 char utPlaceholder = (this == SequenceType.DNA) ? 'T' : 'U';
                 double utCount = (alphabetCount.get(utPlaceholder) != null) ? alphabetCount.get(utPlaceholder) : 0.0;
 
-                return ((alphabetCount.get('A') != null) ? alphabetCount.get('A') : 0.0) * this.molecularWeights.get('A') +
-                        ((alphabetCount.get('C') != null) ? alphabetCount.get('C') : 0.0) * this.molecularWeights.get('C') +
-                        ((alphabetCount.get('G') != null) ? alphabetCount.get('G') : 0.0) * this.molecularWeights.get('G') +
-                        utCount * this.molecularWeights.get(utPlaceholder) -
-                        seqModifier;
+                return ((alphabetCount.get('A') != null) ? alphabetCount.get('A') : 0.0) * this.molecularWeights.get('A') + ((alphabetCount.get('C') != null) ? alphabetCount.get('C') : 0.0) * this.molecularWeights.get('C') + ((alphabetCount.get('G') != null) ? alphabetCount.get('G') : 0.0) * this.molecularWeights.get('G') + utCount * this.molecularWeights.get(utPlaceholder) - seqModifier;
             }
             default -> {
                 return 0.0;
@@ -130,13 +125,9 @@ public enum SequenceType {
         if (this == SequenceType.DNA) {
             double meltingPoint;
             if (seqLength < 14) {
-                meltingPoint = (((alphabetCount.get('A') != null) ? alphabetCount.get('A') : 0.0) +
-                        ((alphabetCount.get('T') != null) ? alphabetCount.get('T') : 0.0)) * 2 +
-                        (((alphabetCount.get('G') != null) ? alphabetCount.get('G') : 0.0) +
-                                ((alphabetCount.get('C') != null) ? alphabetCount.get('C') : 0.0)) * 4;
+                meltingPoint = (((alphabetCount.get('A') != null) ? alphabetCount.get('A') : 0.0) + ((alphabetCount.get('T') != null) ? alphabetCount.get('T') : 0.0)) * 2 + (((alphabetCount.get('G') != null) ? alphabetCount.get('G') : 0.0) + ((alphabetCount.get('C') != null) ? alphabetCount.get('C') : 0.0)) * 4;
             } else {
-                meltingPoint = 64.9 + ((41 * (((alphabetCount.get('G') != null) ? alphabetCount.get('G') : 0.0) +
-                        ((alphabetCount.get('C') != null) ? alphabetCount.get('C') : 0.0) - 16.4)) / seqLength);
+                meltingPoint = 64.9 + ((41 * (((alphabetCount.get('G') != null) ? alphabetCount.get('G') : 0.0) + ((alphabetCount.get('C') != null) ? alphabetCount.get('C') : 0.0) - 16.4)) / seqLength);
             }
 
             return meltingPoint;
@@ -145,15 +136,11 @@ public enum SequenceType {
     }
 
     private double netChargeFractionNTerm(Character aminoAcid, Map<Character, Double> peptideCount, Double pH) {
-        return ((peptideCount.get(aminoAcid) != null) ? peptideCount.get(aminoAcid) : 0.0) *
-                ((Math.pow(10, this.molecularWeights.get(aminoAcid))) /
-                        (Math.pow(10, pH) + Math.pow(10, this.molecularWeights.get(aminoAcid))));
+        return ((peptideCount.get(aminoAcid) != null) ? peptideCount.get(aminoAcid) : 0.0) * ((Math.pow(10, this.molecularWeights.get(aminoAcid))) / (Math.pow(10, pH) + Math.pow(10, this.molecularWeights.get(aminoAcid))));
     }
 
     private double netChargeFractionCTerm(Character aminoAcid, Map<Character, Double> peptideCount, Double pH) {
-        return ((peptideCount.get(aminoAcid) != null) ? peptideCount.get(aminoAcid) : 0.0) *
-                ((Math.pow(10, pH)) /
-                        (Math.pow(10, pH) + Math.pow(10, this.molecularWeights.get(aminoAcid))));
+        return ((peptideCount.get(aminoAcid) != null) ? peptideCount.get(aminoAcid) : 0.0) * ((Math.pow(10, pH)) / (Math.pow(10, pH) + Math.pow(10, this.molecularWeights.get(aminoAcid))));
     }
 
     /**
@@ -164,6 +151,7 @@ public enum SequenceType {
      * @return the netCharge value
      */
     double netCharge(Map<Character, Double> peptideCount, Double pH) {
+
 
         if (this == SequenceType.PEPTIDE) {
             Character[] nTermAminoAcids = {'+', 'R', 'K', 'H'};

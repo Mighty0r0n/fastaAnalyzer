@@ -65,6 +65,7 @@ class FastaEntry implements EntryI {
             codonMap.put("GTG", 'V');
             codonMap.put("GTT", 'V');
             codonMap.put("TAA", '*');
+            codonMap.put("TTA", 'L');
             codonMap.put("TAC", 'Y');
             codonMap.put("TAG", '*');
             codonMap.put("TAT", 'Y');
@@ -76,6 +77,9 @@ class FastaEntry implements EntryI {
             codonMap.put("TGC", 'C');
             codonMap.put("TGG", 'W');
             codonMap.put("TGT", 'C');
+            codonMap.put("TTT", 'F');
+            codonMap.put("TTC", 'F');
+            codonMap.put("TTG", 'F');
 
             return codonMap;
         }
@@ -112,9 +116,7 @@ class FastaEntry implements EntryI {
          */
         public static Map<Character, Double> countAlphabet(String sequence) {
             Map<Character, Double> count = new HashMap<>();
-            sequence.toUpperCase().chars()
-                    .mapToObj(c -> (char) c)
-                    .forEach(c -> count.merge(c, 1.0, Double::sum));
+            sequence.toUpperCase().chars().mapToObj(c -> (char) c).forEach(c -> count.merge(c, 1.0, Double::sum));
 
             return count;
         }
@@ -219,10 +221,8 @@ class FastaEntry implements EntryI {
     public void setNetCharge(SequenceType seqType) {
         switch (seqType) {
             case PEPTIDE -> this.netCharge = seqType.netCharge(this.alphabetCount, 7.0);
-            case DNA, RNA -> this.netCharge = SequenceType.PEPTIDE.netCharge(SequenceHandler.countAlphabet(
-                            this.translatedSequence),
-                    7.0
-            );
+            case DNA, RNA ->
+                    this.netCharge = SequenceType.PEPTIDE.netCharge(SequenceHandler.countAlphabet(this.translatedSequence), 7.0);
         }
     }
 
@@ -239,7 +239,7 @@ class FastaEntry implements EntryI {
         switch (seqType) {
             case PEPTIDE -> this.isoelectricPoint = seqType.isoelectricPoint(seqType, this.alphabetCount, 7.0);
             case DNA, RNA ->
-                    this.isoelectricPoint = SequenceType.PEPTIDE.isoelectricPoint(SequenceType.PEPTIDE, SequenceHandler.countAlphabet(this.sequence), 7.0);
+                    this.isoelectricPoint = SequenceType.PEPTIDE.isoelectricPoint(SequenceType.PEPTIDE, SequenceHandler.countAlphabet(this.translatedSequence), 7.0);
         }
     }
 
