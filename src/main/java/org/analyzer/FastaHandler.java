@@ -14,46 +14,6 @@ public class FastaHandler {
     LinkedList<String> fastaFileList = new LinkedList<>();
     private static FastaHandler instance;
 
-    private static SequenceType getSequenceType(String type) {
-        SequenceType seqType = SequenceType.AMBIGUOUS;
-
-        // Creating the sequenceType here enables multifile support.
-
-        if (type != null) {
-            seqType = SequenceType.valueOf(type.toUpperCase());
-        } else {
-            System.err.println("""
-
-                    No Sequence Type provided. No immediate action required.
-                    FastaEntry object are still filled with the seqID the Sequence and translated Sequence(If DNA or RNA),
-                    but no further metadata analysis is available from here.\s
-                    Please consider to rerun the Program and submit the Sequence Type of the Fasta Sequences for further analysis.""");
-        }
-
-        return seqType;
-    }
-
-    /**
-     * Constructor for the Class. It needs a fasta file and the corresponding Sequence Type to get instantiated
-     *
-     * @param fastaFile File to start analysis with
-     * @param seqType   Sequence type of the input sequence
-     * @throws FileNotFoundException if wrong file path is provided
-     */
-    FastaHandler(String fastaFile, String seqType) throws FileNotFoundException {
-        this.parseFasta(fastaFile, seqType);
-    }
-
-    /**
-     * Constructor for the Class. It needs a fasta file and the corresponding Sequence Type to get instantiated
-     *
-     * @param fastaFile File to start analysis with
-     * @throws FileNotFoundException if wrong file path is provided
-     */
-    FastaHandler(String fastaFile) throws FileNotFoundException {
-        this.parseFasta(fastaFile, null);
-    }
-
     /**
      * Invoke for singleton
      * Additional inputfile check, so no duplicate File will be parsed.
@@ -95,6 +55,28 @@ public class FastaHandler {
     }
 
     /**
+     * Constructor for the Class. It needs a fasta file and the corresponding Sequence Type to get instantiated
+     *
+     * @param fastaFile File to start analysis with
+     * @param seqType   Sequence type of the input sequence
+     * @throws FileNotFoundException if wrong file path is provided
+     */
+    FastaHandler(String fastaFile, String seqType) throws FileNotFoundException {
+        this.parseFasta(fastaFile, seqType);
+    }
+
+    /**
+     * Constructor for the Class. It needs a fasta file and the corresponding Sequence Type to get instantiated
+     *
+     * @param fastaFile File to start analysis with
+     * @throws FileNotFoundException if wrong file path is provided
+     */
+    FastaHandler(String fastaFile) throws FileNotFoundException {
+        this.parseFasta(fastaFile, null);
+    }
+
+
+    /**
      * Wrapper for the parseFasta() method so it can be used outside the package without direct access rights
      * to the parser logic and calculation setters.
      *
@@ -102,6 +84,8 @@ public class FastaHandler {
      * @param type  Type of the given FastaFile
      * @throws FileNotFoundException If an invalid FilePath is given as Input an exception is thrown.
      */
+
+
     public void addFastaEntrys(String fasta, String type) throws FileNotFoundException {
         this.parseFasta(fasta, type);
     }
@@ -117,7 +101,7 @@ public class FastaHandler {
         this.parseFasta(fasta, null);
     }
 
-    private static void checkSequenceType(SequenceType seqtype, String sequence) {
+    private void checkSequenceType(SequenceType seqtype, String sequence) {
         switch (seqtype) {
             case DNA -> {
                 if (!Pattern.matches("[ATGC]+", sequence)) {
@@ -155,7 +139,7 @@ public class FastaHandler {
      * @param seqType the corresponding sequence type of the input file, for getting the alphabet of the sequence
      * @throws FileNotFoundException if the input file does not exist
      */
-    public static void checkFastaFormat(String fasta, SequenceType seqType) throws FileNotFoundException {
+    public void checkFastaFormat(String fasta, SequenceType seqType) throws FileNotFoundException {
 
         Scanner fastaReader = new Scanner(new File(fasta));
         boolean inHeader = false;
@@ -189,22 +173,41 @@ public class FastaHandler {
         checkMissingHeader(headerCount, sequenceID);
     }
 
-    private static void checklastSequence(boolean inSequence, String sequenceID) {
+    private void checklastSequence(boolean inSequence, String sequenceID) {
         if (!inSequence) {
             throw new MalformatedFastaFileException("Invalid format: Last sequence ID: " + sequenceID + " has no sequence");
         }
     }
 
-    private static void checkMissingHeader(int headerCount, String sequenceID) {
+    private void checkMissingHeader(int headerCount, String sequenceID) {
         if (headerCount == 0) {
             throw new MalformatedFastaFileException("Invalid format: " + sequenceID);
         }
     }
 
-    private static void checkHeaderStructure(boolean inHeader, String sequenceID) {
+    private void checkHeaderStructure(boolean inHeader, String sequenceID) {
         if (inHeader) {
             throw new MalformatedFastaFileException("Invalid format: Missing sequence for " + sequenceID);
         }
+    }
+
+    private SequenceType getSequenceType(String type) {
+        SequenceType seqType = SequenceType.AMBIGUOUS;
+
+        // Creating the sequenceType here enables multifile support.
+
+        if (type != null) {
+            seqType = SequenceType.valueOf(type.toUpperCase());
+        } else {
+            System.err.println("""
+
+                    No Sequence Type provided. No immediate action required.
+                    FastaEntry object are still filled with the seqID the Sequence and translated Sequence(If DNA or RNA),
+                    but no further metadata analysis is available from here.\s
+                    Please consider to rerun the Program and submit the Sequence Type of the Fasta Sequences for further analysis.""");
+        }
+
+        return seqType;
     }
 
     /**
