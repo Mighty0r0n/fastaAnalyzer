@@ -8,11 +8,16 @@ import java.io.FileNotFoundException;
 import static org.junit.jupiter.api.Assertions.*;
 
 /**
- * First JUnit test, still a bit overwhelming because there are a lot of Methods to use.
- * Here Objects get created and calculations get compared to hand calculated metadata with help of
- * the provided Calculators from the Script.
- * This Test structure don't test all logics, since I already found Errors not get caught here.
- * But usable for test the calculations.
+ * Tests for the FastaHandler.
+ * Calculations are tested with small and long sequences
+ * Calculations for translated DNA and RNA sequences are tested with small and long sequences
+ * FastaHandler remembers Files it already calculated, this is tested the singletonSetUp test, the FastaHandler skipping Files
+ * here, were calculations already are done.
+ * Exceptions are tested, with testfiles that forces wrong format behaviors, these are provided in the TestFiles Folder
+ * Extrem cases aren't tested, since the User can't influence any calculations from the outside and the File that
+ * gets calculated is tested for proper formation and sequence arrangement. If nonsense information are provided,
+ * the programm just stopps.
+ *
  */
 public class FastaAnalyzerTest {
 
