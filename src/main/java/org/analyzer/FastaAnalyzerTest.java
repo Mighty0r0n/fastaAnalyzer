@@ -23,7 +23,7 @@ public class FastaAnalyzerTest {
      * Unittest, for testing the GC enrichment method. Used a sequence with known properties.
      *
      * @throws FileNotFoundException         if File does not exist
-     * @throws MalformatedFastaFileException if File is formatted not in Fasta Format
+     * @throws MalformattedFastaFileException if File is formatted not in Fasta Format
      */
     @Test
     void dnaGC() throws FileNotFoundException {
@@ -38,7 +38,7 @@ public class FastaAnalyzerTest {
      * Unittest, for testing the molecular weight method. Used a sequence with known properties.
      *
      * @throws FileNotFoundException         if File does not exist
-     * @throws MalformatedFastaFileException if File is formatted not in Fasta Format
+     * @throws MalformattedFastaFileException if File is formatted not in Fasta Format
      */
     @Test
     void dnaMolecularWeight() throws FileNotFoundException {
@@ -53,7 +53,7 @@ public class FastaAnalyzerTest {
      * Unittest, for testing the Melting Point method. Used a sequence with known properties.
      *
      * @throws FileNotFoundException         if File does not exist
-     * @throws MalformatedFastaFileException if File is formatted not in Fasta Format
+     * @throws MalformattedFastaFileException if File is formatted not in Fasta Format
      */
     @Test
     void dnaMeltingPoint() throws FileNotFoundException {
@@ -70,7 +70,7 @@ public class FastaAnalyzerTest {
      * Unittest, for testing the molecular weight method. Used a sequence with known properties.
      *
      * @throws FileNotFoundException         if File does not exist
-     * @throws MalformatedFastaFileException if File is formatted not in Fasta Format
+     * @throws MalformattedFastaFileException if File is formatted not in Fasta Format
      */
     @Test
     void dnaToPeptideNetCharge() throws FileNotFoundException {
@@ -91,7 +91,7 @@ public class FastaAnalyzerTest {
      * Unittest, for testing the GC enrichment method. Used a sequence with known properties.
      *
      * @throws FileNotFoundException         if File does not exist
-     * @throws MalformatedFastaFileException if File is formatted not in Fasta Format
+     * @throws MalformattedFastaFileException if File is formatted not in Fasta Format
      */
 
 
@@ -108,7 +108,7 @@ public class FastaAnalyzerTest {
      * Unittest, for testing the molecular weight method. Used a sequence with known properties.
      *
      * @throws FileNotFoundException         if File does not exist
-     * @throws MalformatedFastaFileException if File is formatted not in Fasta Format
+     * @throws MalformattedFastaFileException if File is formatted not in Fasta Format
      */
     @Test
     void rnaMolecularWeight() throws FileNotFoundException {
@@ -123,7 +123,7 @@ public class FastaAnalyzerTest {
      * Unittest, for testing the netCharge method. Used a sequence with known properties.
      *
      * @throws FileNotFoundException         if File does not exist
-     * @throws MalformatedFastaFileException if File is formatted not in Fasta Format
+     * @throws MalformattedFastaFileException if File is formatted not in Fasta Format
      */
     @Test
     void peptideNetCharge() throws FileNotFoundException {
@@ -138,7 +138,7 @@ public class FastaAnalyzerTest {
      * Unittest, for testing the isoelectric Point method. Used a sequence with known properties.
      *
      * @throws FileNotFoundException         if File does not exist
-     * @throws MalformatedFastaFileException if File is formatted not in Fasta Format
+     * @throws MalformattedFastaFileException if File is formatted not in Fasta Format
      */
     @Test
     void peptideIsoelectricPoint() throws FileNotFoundException {
@@ -153,7 +153,7 @@ public class FastaAnalyzerTest {
      * The Class FastaHandler should remeber the input Files and should not parse douplicate files.
      *
      * @throws FileNotFoundException         if File does not exist
-     * @throws MalformatedFastaFileException if File is formatted not in Fasta Format
+     * @throws MalformattedFastaFileException if File is formatted not in Fasta Format
      */
     @Test
     void singletonSetUp() throws FileNotFoundException {
@@ -201,7 +201,7 @@ public class FastaAnalyzerTest {
             FastaHandler testhandler = FastaHandler.getInstance();
             testhandler.addFastaEntry("TestFiles/malformated.fasta", "dNa");
 
-        } catch (MalformatedFastaFileException mffe) {
+        } catch (MalformattedFastaFileException mffe) {
             hasDoubleHeader = true;
         }
 
@@ -209,7 +209,7 @@ public class FastaAnalyzerTest {
             FastaHandler testhandler = FastaHandler.getInstance();
             testhandler.addFastaEntry("TestFiles/malformated2.fasta", "dNa");
 
-        } catch (MalformatedFastaFileException mffe) {
+        } catch (MalformattedFastaFileException mffe) {
             hasMissingHeaderStart = true;
         }
 
@@ -218,7 +218,7 @@ public class FastaAnalyzerTest {
             FastaHandler testhandler = FastaHandler.getInstance();
             testhandler.addFastaEntry("TestFiles/dna.fasta", "dNa");
 
-        } catch (MalformatedFastaFileException mffe) {
+        } catch (MalformattedFastaFileException mffe) {
             doublecheck = false;
         }
 

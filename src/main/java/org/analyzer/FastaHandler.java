@@ -104,53 +104,6 @@ public class FastaHandler {
         return seqType;
     }
 
-    /**
-     * This Method reads the input file and fill all necessary Objects with the information's needed, for further
-     * calculations.
-     *
-     * @param fasta The chosen fasta input file
-     * @throws FileNotFoundException Path of the input file is incorrect
-     */
-    private void parseFasta(String fasta, String type) throws FileNotFoundException {
-
-
-        String filename = fasta.split("/")[fasta.split("/").length - 1];
-        LinkedList<FastaEntry> entryList = new LinkedList<>();
-        SequenceType seqType = getSequenceType(type, filename);
-        checkFastaFormat(fasta, seqType);
-        StringBuilder sequenceHandler = new StringBuilder();
-        Scanner fastaReader = new Scanner(new File(fasta));
-
-        int headerCounter = -1;
-
-        // main parsing logic. Object is creating when header line is found and is filled line by line with
-        // all the needed information here
-
-        while (fastaReader.hasNext()) {
-            String fastaLine2 = fastaReader.nextLine().trim();
-            if (fastaLine2.startsWith(">")) {
-                FastaEntry tmpEntry = new FastaEntry(fastaLine2);
-                entryList.add(tmpEntry);
-
-                if (headerCounter != -1) {
-                    // For getting the fore last entry in the entryList because this logic appends the sequence of the
-                    // fore last when a NEW Object is found.
-                    entryList.get(entryList.size() - 2).settingSequenceProperties(sequenceHandler.toString(), seqType);
-                }
-                sequenceHandler = new StringBuilder();
-                headerCounter++;
-            } else if (fastaLine2.startsWith(";")) {
-                System.out.println("Fasta contains comment lines, this parser is ignoring them.");
-            } else {
-                sequenceHandler.append(fastaLine2.toUpperCase());
-            }
-        }
-        entryList.get(entryList.size() - 1).settingSequenceProperties(sequenceHandler.toString(), seqType);
-
-        setFastaMap(filename, entryList, seqType);
-    }
-
-
     private void setFastaMap(String filename, LinkedList<FastaEntry> entryList, SequenceType seqType) {
         if (Objects.requireNonNull(seqType) == SequenceType.AMBIGUOUS) {
             fastaMap.put(filename.split("\\.")[0] + "-ambiguous.fasta", entryList);
@@ -197,6 +150,67 @@ public class FastaHandler {
         }
     }
 
+    /**
+     * Parses the input fasta file and checks for format. Object gets filled here and given input file
+     *
+     * @param fasta input file that needs to be checked
+     * @param type  the corresponding sequence type of the input file, for getting the alphabet of the sequence
+     * @throws FileNotFoundException if the input file does not exist
+     */
+    private void parseFasta(String fasta, String type) throws FileNotFoundException {
+
+        Scanner fastaReader = new Scanner(new File(fasta));
+        boolean inHeader = false;
+        boolean inSequence = false;
+        int headerCount = -1;
+        String sequenceID = "No header found";
+        StringBuilder sequenceHandler = new StringBuilder();
+        LinkedList<FastaEntry> entryList = new LinkedList<>();
+        String filename = fasta.split("/")[fasta.split("/").length - 1];
+        SequenceType seqType = getSequenceType(type, filename);
+
+        while (fastaReader.hasNextLine()) {
+            String line = fastaReader.nextLine().trim();
+
+            if (inSequence && line.startsWith(">")) {
+                inHeader = false;
+                inSequence = false;
+                entryList.get(entryList.size() - 1).settingSequenceProperties(sequenceHandler.toString(), seqType);
+            }
+
+            if (line.startsWith(">")) {
+                if (inHeader) {
+                    throw new MalformattedFastaFileException("Invalid format: Missing sequence for " + sequenceID);
+                }
+                FastaEntry tmpEntry = new FastaEntry(line);
+                entryList.add(tmpEntry);
+                sequenceHandler = new StringBuilder();
+                inHeader = true;
+                headerCount++;
+                sequenceID = line;
+            } else if (line.startsWith(";") || line.isEmpty()) {
+                if (line.startsWith(";")) {
+                    entryList.get(entryList.size() - 1).setCommentLine(line);
+                }
+            } else if (inHeader) {
+                sequenceHandler.append(line.toUpperCase());
+                checkSequenceType(seqType, line.toUpperCase());
+                inSequence = true;
+            }
+        }
+
+        if (!inSequence) {
+            throw new MalformattedFastaFileException("Invalid format: Last sequence ID: " + sequenceID + " has no sequence");
+        }
+        if (headerCount == -1) {
+            throw new MalformattedFastaFileException("Invalid format: " + sequenceID);
+        }
+
+        entryList.get(entryList.size() - 1).settingSequenceProperties(sequenceHandler.toString(), seqType);
+
+        setFastaMap(filename, entryList, seqType);
+    }
+
     private void checkSequenceType(SequenceType seqtype, String sequence) {
         switch (seqtype) {
             case DNA -> {
@@ -223,53 +237,6 @@ public class FastaHandler {
                     throw new WrongSequenceTypeException("Sequence type doesn't look like any sequence at all");
                 }
             }
-        }
-    }
-
-    /**
-     * Method for checking the format of the Input Fasta-File. Checks for alternating Header Sequence pairs
-     * and checks the alphabet of the given input sequence. Throws Errors if the File is not formatted
-     * correctly.
-     *
-     * @param fasta   input file that needs to be checked
-     * @param seqType the corresponding sequence type of the input file, for getting the alphabet of the sequence
-     * @throws FileNotFoundException if the input file does not exist
-     */
-    public void checkFastaFormat(String fasta, SequenceType seqType) throws FileNotFoundException {
-
-        Scanner fastaReader = new Scanner(new File(fasta));
-        boolean inHeader = false;
-        boolean inSequence = false;
-        int headerCount = 0;
-        String sequenceID = "No header found";
-
-
-        while (fastaReader.hasNextLine()) {
-            String line = fastaReader.nextLine().trim();
-
-            if (inSequence && line.startsWith(">")) {
-                inHeader = false;
-                inSequence = false;
-            }
-
-            if (line.startsWith(">")) {
-                if (inHeader) {
-                    throw new MalformatedFastaFileException("Invalid format: Missing sequence for " + sequenceID);
-                }
-                inHeader = true;
-                headerCount++;
-                sequenceID = line;
-            } else if (line.startsWith(";") || line.isEmpty()) {
-            } else if (inHeader) {
-                checkSequenceType(seqType, line.toUpperCase());
-                inSequence = true;
-            }
-        }
-        if (!inSequence) {
-            throw new MalformatedFastaFileException("Invalid format: Last sequence ID: " + sequenceID + " has no sequence");
-        }
-        if (headerCount == 0) {
-            throw new MalformatedFastaFileException("Invalid format: " + sequenceID);
         }
     }
 

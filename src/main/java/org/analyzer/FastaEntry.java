@@ -124,6 +124,7 @@ class FastaEntry implements EntryI {
 
     private final String seqID;
     private String sequence;
+    private String commentLine;
     private String translatedSequence;
     private int sequenceLength;
     private Map<Character, Double> alphabetCount;
@@ -291,5 +292,15 @@ class FastaEntry implements EntryI {
     @Override
     public double getIsoelectricPoint() {
         return isoelectricPoint;
+    }
+
+    @Override
+    public String getCommentLine() {
+        return commentLine;
+    }
+
+    @Override
+    public void setCommentLine(String commentLine) {
+        this.commentLine = commentLine;
     }
 }
