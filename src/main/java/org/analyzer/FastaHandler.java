@@ -15,88 +15,42 @@ public class FastaHandler {
 
     /**
      * Invoke for singleton
-     * Additional input file check, so no duplicate File will be parsed.
      *
-     * @param fastaFile Input File for the analysis
-     * @param seqType   Sequence Type of the input file
      * @return instance of the class
-     * @throws FileNotFoundException If Incorrect File Path is provided
      */
-    public static FastaHandler getInstance(String fastaFile, String seqType) throws FileNotFoundException {
-        String filename = fastaFile.split("/")[fastaFile.split("/").length - 1];
+    public static FastaHandler getInstance() {
         if (instance == null) {
-            instance = new FastaHandler(fastaFile, seqType);
-
-        } else if (!instance.fastaMap.containsKey(filename)) {
-            instance.addFastaEntry(fastaFile, seqType);
-
+            instance = new FastaHandler();
         }
         return instance;
     }
-
-    /**
-     * Invoke for singleton, without SeqType param. Will be treated as ambiguous here
-     * Additional input file check, so no duplicate File will be parsed.
-     * No input file memory here, so calculations can be redone when provided with sequence type again.
-     *
-     * @param fastaFile Input File for the analysis
-     * @return instance of the class
-     * @throws FileNotFoundException If Incorrect File Path is provided
-     */
-    public static FastaHandler getInstance(String fastaFile) throws FileNotFoundException {
-        String filename = fastaFile.split("/")[fastaFile.split("/").length - 1].split("\\.")[0] + "-ambiguous.fasta";
-        if (instance == null) {
-            instance = new FastaHandler(fastaFile);
-
-        } else if (!instance.fastaMap.containsKey(filename)) {
-            instance.addFastaEntry(fastaFile);
-        }
-        return instance;
-    }
-
-    /**
-     * Constructor for the Class. It needs a fasta file and the corresponding Sequence Type to get instantiated
-     *
-     * @param fastaFile File to start analysis with
-     * @param seqType   Sequence type of the input sequence
-     * @throws FileNotFoundException if wrong file path is provided
-     */
-    FastaHandler(String fastaFile, String seqType) throws FileNotFoundException {
-        this.parseFasta(fastaFile, seqType);
-    }
-
-    /**
-     * Constructor for the Class. It needs a fasta file and the corresponding Sequence Type to get instantiated
-     *
-     * @param fastaFile File to start analysis with
-     * @throws FileNotFoundException if wrong file path is provided
-     */
-    FastaHandler(String fastaFile) throws FileNotFoundException {
-        this.parseFasta(fastaFile, null);
-    }
-
 
     /**
      * Wrapper for the parseFasta() method so it can be used outside the package without direct access rights
-     * to the parser logic and calculation setters.
+     * to the parser logic and calculation setters. Also, the input file gets memorized, so it won't be parsed twice.
      *
      * @param fasta File to analyze
      * @param type  Type of the given FastaFile
      * @throws FileNotFoundException If an invalid FilePath is given as Input an exception is thrown.
      */
     public void addFastaEntry(String fasta, String type) throws FileNotFoundException {
-        this.parseFasta(fasta, type);
+        String filename = fasta.split("/")[fasta.split("/").length - 1];
+        if (!instance.fastaMap.containsKey(filename)) {
+            this.parseFasta(fasta, type);
+        }
     }
 
     /**
      * Wrapper for the parseFasta() method so it can be used outside the package without direct access rights
-     * to the parser logic and calculation setters.
+     * to the parser logic and calculation setters. Also, the input file gets memorized, so it won't be parsed twice.
      *
      * @param fasta File to analyze
      * @throws FileNotFoundException If an invalid FilePath is given as Input an exception is thrown.
      */
     public void addFastaEntry(String fasta) throws FileNotFoundException {
-        this.parseFasta(fasta, null);
+        if (!instance.fastaMap.containsKey(fasta.split("/")[fasta.split("/").length - 1].split("\\.")[0] + "-ambiguous.fasta")) {
+            this.parseFasta(fasta, null);
+        }
     }
 
     private String insertLineBreaks(String input) {

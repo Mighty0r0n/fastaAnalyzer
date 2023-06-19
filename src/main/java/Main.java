@@ -31,12 +31,12 @@ public class Main extends Thread {
         CommandLine line = parser.parse(options, args);
 
 
+        FastaHandler handler = FastaHandler.getInstance();
         // Commandline Logic won't allow missing sequence types. When implementing an own logic, you can
         // use the constructor that won't need any sequence type info.
         if (line.getOptionValues("i").length == line.getOptionValues("t").length) {
             for (int i = 0; i < line.getOptionValues("i").length; i++) {
-                FastaHandler handler = FastaHandler.getInstance(line.getOptionValues("i")[i], line.getOptionValues("t")[i]);
-                handler.generateOutputFiles(line.getOptionValue("o"));
+                handler.addFastaEntry(line.getOptionValues("i")[i], line.getOptionValues("t")[i]);
             }
         } else {
             System.err.println("""
@@ -44,6 +44,9 @@ public class Main extends Thread {
                     If it is not known, you can set the sequence type to ambiguous.
                     """);
         }
+
+        handler.generateOutputFiles(line.getOptionValue("o"));
+
         System.out.println("Program finished");
     }
 }

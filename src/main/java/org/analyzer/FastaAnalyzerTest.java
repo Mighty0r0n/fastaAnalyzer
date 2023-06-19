@@ -27,7 +27,8 @@ public class FastaAnalyzerTest {
      */
     @Test
     void dnaGC() throws FileNotFoundException {
-        FastaHandler testhandler = new FastaHandler("TestFiles/dna.fasta", "dna");
+        FastaHandler testhandler = FastaHandler.getInstance();
+        testhandler.addFastaEntry("TestFiles/dna.fasta", "dna");
 
         assertEquals(0.5258064516129032, testhandler.fastaMap.get("dna.fasta").get(0).getGcEnrichment());
         assertEquals(0.5, testhandler.fastaMap.get("dna.fasta").get(1).getGcEnrichment());
@@ -41,7 +42,8 @@ public class FastaAnalyzerTest {
      */
     @Test
     void dnaMolecularWeight() throws FileNotFoundException {
-        FastaHandler testhandler = new FastaHandler("TestFiles/dna.fasta", "dna");
+        FastaHandler testhandler = FastaHandler.getInstance();
+        testhandler.addFastaEntry("TestFiles/dna.fasta", "dna");
 
         assertEquals(191656.03, testhandler.fastaMap.get("dna.fasta").get(0).getMolecularWeight());
         assertEquals(1173.84, testhandler.fastaMap.get("dna.fasta").get(1).getMolecularWeight());
@@ -55,7 +57,8 @@ public class FastaAnalyzerTest {
      */
     @Test
     void dnaMeltingPoint() throws FileNotFoundException {
-        FastaHandler testhandler = new FastaHandler("TestFiles/dna.fasta", "dna");
+        FastaHandler testhandler = FastaHandler.getInstance();
+        testhandler.addFastaEntry("TestFiles/dna.fasta", "dna");
 
         // For sequence with length over 14
         assertEquals(85.37354838709678, testhandler.fastaMap.get("dna.fasta").get(0).getMeltingPoint());
@@ -73,11 +76,14 @@ public class FastaAnalyzerTest {
     void dnaToPeptideNetCharge() throws FileNotFoundException {
 
         // can translate DNA/RNA to peptide and make peptide calculations from there
-        FastaHandler testhandler = new FastaHandler("TestFiles/dnatopeptide.fasta", "dna");
-        FastaHandler testhandler2 = new FastaHandler("TestFiles/rnatopeptide.fasta", "rna");
+        FastaHandler testhandler = FastaHandler.getInstance();
+
+        testhandler.addFastaEntry("TestFiles/dnatopeptide.fasta", "dna");
+        testhandler.addFastaEntry("TestFiles/rnatopeptide.fasta", "rna");
+
 
         assertEquals(0.9968388513224302, testhandler.fastaMap.get("dnatopeptide.fasta").get(0).getNetCharge());
-        assertEquals(0.9968388513224302, testhandler2.fastaMap.get("rnatopeptide.fasta").get(0).getNetCharge());
+        assertEquals(0.9968388513224302, testhandler.fastaMap.get("rnatopeptide.fasta").get(0).getNetCharge());
     }
 
 
@@ -91,7 +97,8 @@ public class FastaAnalyzerTest {
 
     @Test
     void rnaGC() throws FileNotFoundException {
-        FastaHandler testhandler = new FastaHandler("TestFiles/rna.fasta", "rna");
+        FastaHandler testhandler = FastaHandler.getInstance();
+        testhandler.addFastaEntry("TestFiles/rna.fasta", "rna");
 
         assertEquals(0.3333333333333333, testhandler.fastaMap.get("rna.fasta").get(0).getGcEnrichment());
         assertEquals(0.5, testhandler.fastaMap.get("rna.fasta").get(1).getGcEnrichment());
@@ -105,7 +112,8 @@ public class FastaAnalyzerTest {
      */
     @Test
     void rnaMolecularWeight() throws FileNotFoundException {
-        FastaHandler testhandler = new FastaHandler("TestFiles/rna.fasta", "rna");
+        FastaHandler testhandler = FastaHandler.getInstance();
+        testhandler.addFastaEntry("TestFiles/rna.fasta", "rna");
 
         assertEquals(1739.1999999999998, testhandler.fastaMap.get("rna.fasta").get(0).getMolecularWeight());
         assertEquals(1126.8, testhandler.fastaMap.get("rna.fasta").get(1).getMolecularWeight());
@@ -119,7 +127,8 @@ public class FastaAnalyzerTest {
      */
     @Test
     void peptideNetCharge() throws FileNotFoundException {
-        FastaHandler testhandler = new FastaHandler("TestFiles/peptide.fasta", "peptide");
+        FastaHandler testhandler = FastaHandler.getInstance();
+        testhandler.addFastaEntry("TestFiles/peptide.fasta", "peptide");
 
         assertEquals(-1.4247671868363128, testhandler.fastaMap.get("peptide.fasta").get(0).getNetCharge());
 
@@ -133,7 +142,8 @@ public class FastaAnalyzerTest {
      */
     @Test
     void peptideIsoelectricPoint() throws FileNotFoundException {
-        FastaHandler testhandler = new FastaHandler("TestFiles/peptide.fasta", "peptide");
+        FastaHandler testhandler = FastaHandler.getInstance();
+        testhandler.addFastaEntry("TestFiles/peptide.fasta", "peptide");
 
         assertEquals(6.333508902276007, testhandler.fastaMap.get("peptide.fasta").get(0).getIsoelectricPoint());
     }
@@ -147,10 +157,11 @@ public class FastaAnalyzerTest {
      */
     @Test
     void singletonSetUp() throws FileNotFoundException {
-        FastaHandler testhandler = FastaHandler.getInstance("TestFiles/dna.fasta");
-        FastaHandler.getInstance("TestFiles/dna.fasta", "dna");
-        FastaHandler.getInstance("TestFiles/dna.fasta");
-        FastaHandler.getInstance("TestFiles/dna.fasta", "dna");
+        FastaHandler testhandler = FastaHandler.getInstance();
+        testhandler.addFastaEntry("TestFiles/dna.fasta", "dna");
+        testhandler.addFastaEntry("TestFiles/dna.fasta");
+        testhandler.addFastaEntry("TestFiles/dna.fasta", "dna");
+
 
         /*
          * For the 4 times the input file is loaded, only 2 times it should calculate objects from the input.
@@ -187,20 +198,26 @@ public class FastaAnalyzerTest {
         boolean doublecheck = true;
 
         try {
-            new FastaHandler("TestFiles/malformated.fasta", "dNa");
+            FastaHandler testhandler = FastaHandler.getInstance();
+            testhandler.addFastaEntry("TestFiles/malformated.fasta", "dNa");
+
         } catch (MalformatedFastaFileException mffe) {
             hasDoubleHeader = true;
         }
 
         try {
-            new FastaHandler("TestFiles/malformated2.fasta", "dNa");
+            FastaHandler testhandler = FastaHandler.getInstance();
+            testhandler.addFastaEntry("TestFiles/malformated2.fasta", "dNa");
+
         } catch (MalformatedFastaFileException mffe) {
             hasMissingHeaderStart = true;
         }
 
 
         try {
-            new FastaHandler("TestFiles/dna.fasta", "dNa");
+            FastaHandler testhandler = FastaHandler.getInstance();
+            testhandler.addFastaEntry("TestFiles/dna.fasta", "dNa");
+
         } catch (MalformatedFastaFileException mffe) {
             doublecheck = false;
         }
@@ -222,7 +239,9 @@ public class FastaAnalyzerTest {
         boolean hasWrongSequenceType = false;
 
         try {
-            new FastaHandler("TestFiles/dna.fasta", "peptide");
+            FastaHandler testhandler = FastaHandler.getInstance();
+            testhandler.addFastaEntry("TestFiles/dna.fasta", "peptide");
+
         } catch (WrongSequenceTypeException wste) {
             hasWrongSequenceType = true;
         }
