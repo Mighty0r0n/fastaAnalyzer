@@ -11,8 +11,6 @@ import java.util.regex.Pattern;
  */
 public class FastaHandler {
     Map<String, LinkedList<FastaEntry>> fastaMap = new HashMap<>();
-
-    LinkedList<String> fastaFileList = new LinkedList<>();
     private static FastaHandler instance;
 
     /**
@@ -28,11 +26,10 @@ public class FastaHandler {
         String filename = fastaFile.split("/")[fastaFile.split("/").length - 1];
         if (instance == null) {
             instance = new FastaHandler(fastaFile, seqType);
-            instance.fastaFileList.add(filename);
 
-        } else if (!instance.fastaFileList.contains(filename)) {
+        } else if (!instance.fastaMap.containsKey(filename)) {
             instance.addFastaEntry(fastaFile, seqType);
-            instance.fastaFileList.add(filename);
+
         }
         return instance;
     }
@@ -50,11 +47,9 @@ public class FastaHandler {
         String filename = fastaFile.split("/")[fastaFile.split("/").length - 1].split("\\.")[0] + "-ambiguous.fasta";
         if (instance == null) {
             instance = new FastaHandler(fastaFile);
-            instance.fastaFileList.add(filename);
 
-        } else if (!instance.fastaFileList.contains(filename)) {
+        } else if (!instance.fastaMap.containsKey(filename)) {
             instance.addFastaEntry(fastaFile);
-            instance.fastaFileList.add(filename);
         }
         return instance;
     }
@@ -322,5 +317,9 @@ public class FastaHandler {
         if (headerCount == 0) {
             throw new MalformatedFastaFileException("Invalid format: " + sequenceID);
         }
+    }
+
+    public Map<String, LinkedList<FastaEntry>> getFastaMap() {
+        return fastaMap;
     }
 }

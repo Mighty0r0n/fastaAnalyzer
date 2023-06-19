@@ -12,8 +12,8 @@ import org.apache.commons.cli.*;
 
 public class Main extends Thread {
     /**
-     * Main Logic for the FastaAnalyzer. class only needs to get instantiated with the File to analyse and the
-     * corresponding Sequence Type
+     * Main Logic for the FastaAnalyzer. Analyses every input file.
+     * Every input file needs a correpsonding sequence type
      *
      * @param args arguments given to the main from the CLI, these getting parsed by commons-cli
      * @throws FileNotFoundException incorrect filepath
@@ -30,11 +30,20 @@ public class Main extends Thread {
 
         CommandLine line = parser.parse(options, args);
 
-        for ( int i = 0; i < line.getOptionValues("i").length ; i++) {
-            FastaHandler handler = FastaHandler.getInstance(line.getOptionValues("i")[i], line.getOptionValues("t")[i]);
-            handler.generateOutputFiles(line.getOptionValue("o"));
-        }
 
+        // Commandline Logic won't allow missing sequence types. When implementing an own logic, you can
+        // use the constructor that won't need any sequence type info.
+        if (line.getOptionValues("i").length == line.getOptionValues("t").length) {
+            for (int i = 0; i < line.getOptionValues("i").length; i++) {
+                FastaHandler handler = FastaHandler.getInstance(line.getOptionValues("i")[i], line.getOptionValues("t")[i]);
+                handler.generateOutputFiles(line.getOptionValue("o"));
+            }
+        } else {
+            System.err.println("""
+                    Please provide for every infile a sequence type.
+                    If it is not known, you can set the sequence type to ambiguous.
+                    """);
+        }
         System.out.println("Program finished");
     }
 }
