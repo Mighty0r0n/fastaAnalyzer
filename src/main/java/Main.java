@@ -30,6 +30,7 @@ public class Main extends Thread {
         options.addOption(Option.builder("i").argName("infile").hasArgs().longOpt("Input-Path").valueSeparator(' ').build());
         options.addOption(Option.builder("t").argName("type").hasArgs().longOpt("Sequence-Type").valueSeparator(' ').build());
         options.addOption(Option.builder("v").argName("verbose").longOpt("Verbose").desc("Make the programm output verbose").build());
+        options.addOption(Option.builder("p").argName("translate").longOpt("Peptide-Translate").desc("Translate Dna/Rna to peptide sequence").build());
 
         CommandLine line = parser.parse(options, args);
 
@@ -51,7 +52,7 @@ public class Main extends Thread {
                     If it is not known, you can set the sequence type to ambiguous.
                     """);
         }
-        handler.generateOutputFiles(line.getOptionValue("o"));
+        handler.generateOutputFiles(line.getOptionValue("o"), line.hasOption("v"), line.hasOption("p"));
         System.out.println("Program finished");
     }
 }

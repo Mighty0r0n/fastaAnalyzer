@@ -115,31 +115,53 @@ public class FastaHandler {
      *
      * @param outputDirectory specifies the Directory where the files are saved to
      */
-    public void generateOutputFiles(String outputDirectory) {
+    public void generateOutputFiles(String outputDirectory, boolean verbose, boolean translate) {
         for (String inFile : this.fastaMap.keySet()) {
             String outFile = inFile.split("\\.")[0] + "_analyzed.fasta";
             try (BufferedWriter writer = new BufferedWriter(new FileWriter(outputDirectory + outFile))) {
                 for (FastaEntry entry : this.fastaMap.get(inFile)) {
                     writer.write(entry.getSeqID());
+                    if (verbose){
+                        System.out.println(entry.getSeqID());
+                    }
                     writer.newLine();
                     writer.write(";Sequence Length: " + entry.getSequenceLength() + "\t");
                     if (entry.getMolecularWeight() != 0.0) {
                         writer.write("Molecular Weight: " + String.format("%.2f", entry.getMolecularWeight()) + "g/mole\t");
+                        if (verbose){
+                            System.out.print("Molecular Weight: " + String.format("%.2f", entry.getMolecularWeight()) + "g/mole\t");
+                        }
                     }
                     if (entry.getMeltingPoint() != 0.0) {
                         writer.write("Melting Point: " + String.format("%.2f", entry.getMeltingPoint()) + "°C\t");
+                        if (verbose){
+                            System.out.print("Melting Point: " + String.format("%.2f", entry.getMeltingPoint()) + "°C\t");
+                        }
                     }
                     if (entry.getGcEnrichment() != 0.0) {
                         writer.write("GC Enrichment: " + String.format("%.2f", entry.getGcEnrichment() * 100) + "%\t");
+                        if (verbose){
+                            System.out.print("GC Enrichment: " + String.format("%.2f", entry.getGcEnrichment() * 100) + "%\t");
+                        }
                     }
                     if (entry.getNetCharge() != 0.0) {
                         writer.write("Net Charge(at ph 7): " + String.format("%.2f", entry.getNetCharge()) + "\t");
+                        if (verbose){
+                            System.out.print("Net Charge(at ph 7): " + String.format("%.2f", entry.getNetCharge()) + "\t");
+                        }
                     }
                     if (entry.getIsoelectricPoint() != 0.0) {
                         writer.write("Iso electricPoint: " + String.format("%.2f", entry.getIsoelectricPoint()) + "pH\t");
+                        if (verbose){
+                            System.out.println("Iso electricPoint: " + String.format("%.2f", entry.getIsoelectricPoint()) + "pH\t");
+                        }
                     }
                     writer.newLine();
-                    writer.write((entry.getTranslatedSequence() == null) ? insertLineBreaks(entry.getSequence()) : insertLineBreaks(entry.getTranslatedSequence()));
+                    if (translate){
+                        writer.write((entry.getTranslatedSequence() == null) ? insertLineBreaks(entry.getSequence()) : insertLineBreaks(entry.getTranslatedSequence()));
+                    } else {
+                        writer.write(entry.getSequence());
+                    }
                     writer.newLine();
                 }
             } catch (IOException e) {
