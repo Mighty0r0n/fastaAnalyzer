@@ -1,3 +1,5 @@
+package org.analyzer;
+
 import java.io.FileNotFoundException;
 
 import org.analyzer.FastaHandler;
@@ -6,15 +8,15 @@ import org.analyzer.WrongSequenceTypeException;
 import org.apache.commons.cli.*;
 
 /**
- * Runnable Main Method for the FastaAnalyzer
+ * Runnable org.analyzer.Main Method for the FastaAnalyzer
  *
  * @author Daniel Tischler 6064795
  * @version JDK 1.7, 03.05.2023
  */
 
-public class Main extends Thread {
+public class Main {
     /**
-     * Main Logic for the FastaAnalyzer. Analyses every input file.
+     * org.analyzer.Main Logic for the FastaAnalyzer. Analyses every input file.
      * Every input file needs a correpsonding sequence type
      *
      * @param args arguments given to the main from the CLI, these getting parsed by commons-cli
@@ -53,6 +55,6 @@ public class Main extends Thread {
                     """);
         }
         handler.generateOutputFiles(line.getOptionValue("o"), line.hasOption("v"), line.hasOption("p"));
-        System.out.println("Program finished");
+        System.out.println("\nProgram finished");
     }
 }

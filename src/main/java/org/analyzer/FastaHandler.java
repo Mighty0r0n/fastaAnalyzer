@@ -110,65 +110,6 @@ public class FastaHandler {
         }
     }
 
-    /**
-     * Generates an output file for every parsed file. Includes metadata inside the comment bracket of the fasta
-     *
-     * @param outputDirectory specifies the Directory where the files are saved to
-     */
-    public void generateOutputFiles(String outputDirectory, boolean verbose, boolean translate) {
-        for (String inFile : this.fastaMap.keySet()) {
-            String outFile = inFile.split("\\.")[0] + "_analyzed.fasta";
-            try (BufferedWriter writer = new BufferedWriter(new FileWriter(outputDirectory + outFile))) {
-                for (FastaEntry entry : this.fastaMap.get(inFile)) {
-                    writer.write(entry.getSeqID());
-                    if (verbose){
-                        System.out.println(entry.getSeqID());
-                    }
-                    writer.newLine();
-                    writer.write(";Sequence Length: " + entry.getSequenceLength() + "\t");
-                    if (entry.getMolecularWeight() != 0.0) {
-                        writer.write("Molecular Weight: " + String.format("%.2f", entry.getMolecularWeight()) + "g/mole\t");
-                        if (verbose){
-                            System.out.print("Molecular Weight: " + String.format("%.2f", entry.getMolecularWeight()) + "g/mole\t");
-                        }
-                    }
-                    if (entry.getMeltingPoint() != 0.0) {
-                        writer.write("Melting Point: " + String.format("%.2f", entry.getMeltingPoint()) + "°C\t");
-                        if (verbose){
-                            System.out.print("Melting Point: " + String.format("%.2f", entry.getMeltingPoint()) + "°C\t");
-                        }
-                    }
-                    if (entry.getGcEnrichment() != 0.0) {
-                        writer.write("GC Enrichment: " + String.format("%.2f", entry.getGcEnrichment() * 100) + "%\t");
-                        if (verbose){
-                            System.out.print("GC Enrichment: " + String.format("%.2f", entry.getGcEnrichment() * 100) + "%\t");
-                        }
-                    }
-                    if (entry.getNetCharge() != 0.0) {
-                        writer.write("Net Charge(at ph 7): " + String.format("%.2f", entry.getNetCharge()) + "\t");
-                        if (verbose){
-                            System.out.print("Net Charge(at ph 7): " + String.format("%.2f", entry.getNetCharge()) + "\t");
-                        }
-                    }
-                    if (entry.getIsoelectricPoint() != 0.0) {
-                        writer.write("Iso electricPoint: " + String.format("%.2f", entry.getIsoelectricPoint()) + "pH\t");
-                        if (verbose){
-                            System.out.println("Iso electricPoint: " + String.format("%.2f", entry.getIsoelectricPoint()) + "pH\t");
-                        }
-                    }
-                    writer.newLine();
-                    if (translate){
-                        writer.write((entry.getTranslatedSequence() == null) ? insertLineBreaks(entry.getSequence()) : insertLineBreaks(entry.getTranslatedSequence()));
-                    } else {
-                        writer.write(entry.getSequence());
-                    }
-                    writer.newLine();
-                }
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        }
-    }
 
     /**
      * Parses the input fasta file and checks for format. Object gets filled here and given input file
@@ -233,6 +174,54 @@ public class FastaHandler {
 
         } catch (FileNotFoundException fnfe) {
             fnfe.printStackTrace();
+        }
+    }
+
+    /**
+     * Generates an output file for every parsed file. Includes metadata inside the comment bracket of the fasta
+     *
+     * @param outputDirectory specifies the Directory where the files are saved to
+     */
+    public void generateOutputFiles(String outputDirectory, boolean verbose, boolean translate) {
+        for (String inFile : this.fastaMap.keySet()) {
+            String outFile = inFile.split("\\.")[0] + "_analyzed.fasta";
+            try (BufferedWriter writer = new BufferedWriter(new FileWriter(outputDirectory + outFile))) {
+                List<FastaEntry> entries = this.fastaMap.get(inFile);
+                for (FastaEntry entry : entries) {
+                    writeEntry(writer, entry, verbose, translate);
+                }
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
+    private void writeEntry(BufferedWriter writer, FastaEntry entry, boolean verbose, boolean translate) throws IOException {
+        writeVerboseOutput(writer, entry.getSeqID(), verbose);
+        writer.newLine();
+
+        writeVerboseOutput(writer, ";Sequence Length: " + entry.getSequenceLength() + "\t", verbose);
+        writeVerboseOutput(writer, "Molecular Weight: " + String.format("%.2f", entry.getMolecularWeight()) + "g/mole\t", entry.getMolecularWeight() != 0.0 && verbose);
+        writeVerboseOutput(writer, "Melting Point: " + String.format("%.2f", entry.getMeltingPoint()) + "°C\t", entry.getMeltingPoint() != 0.0 && verbose);
+        writeVerboseOutput(writer, "GC Enrichment: " + String.format("%.2f", entry.getGcEnrichment() * 100) + "%\t", entry.getGcEnrichment() != 0.0 && verbose);
+        writeVerboseOutput(writer, "Net Charge(at ph 7): " + String.format("%.2f", entry.getNetCharge()) + "\t", entry.getNetCharge() != 0.0 && verbose);
+        writeVerboseOutput(writer, "Iso electricPoint: " + String.format("%.2f", entry.getIsoelectricPoint()) + "pH\t", entry.getIsoelectricPoint() != 0.0 && verbose);
+
+        writer.newLine();
+
+        String sequenceToWrite = (translate && entry.getTranslatedSequence() != null) ? entry.getTranslatedSequence() : entry.getSequence();
+        writer.write(insertLineBreaks(sequenceToWrite));
+        writer.newLine();
+    }
+
+    private void writeVerboseOutput(BufferedWriter writer, String text, boolean verbose) throws IOException {
+        writer.write(text);
+        if (verbose) {
+            if (text.startsWith(">")) {
+                System.out.println("\n" + text);
+            } else {
+                System.out.print(text);
+            }
         }
     }
 
