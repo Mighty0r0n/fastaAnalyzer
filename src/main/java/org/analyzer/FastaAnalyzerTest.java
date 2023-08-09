@@ -25,10 +25,10 @@ public class FastaAnalyzerTest {
     @Test
     void dnaGC() throws WrongSequenceTypeException, MalformattedFastaFileException {
         FastaHandler testhandler = FastaHandler.getInstance();
-        testhandler.addFastaEntry("TestFiles/dna.fasta", "dna");
+        testhandler.generateFastaHandlerObject("TestFiles/dna.fasta", "dna");
 
-        assertEquals(0.5258064516129032, testhandler.fastaMap.get("dna.fasta").get(0).getGcEnrichment());
-        assertEquals(0.5, testhandler.fastaMap.get("dna.fasta").get(1).getGcEnrichment());
+        assertEquals(0.5258064516129032, testhandler.fastaObjectList.get(0).getGcEnrichment());
+        assertEquals(0.5, testhandler.fastaObjectList.get(1).getGcEnrichment());
     }
 
     /**
@@ -39,10 +39,10 @@ public class FastaAnalyzerTest {
     @Test
     void dnaMolecularWeight() throws WrongSequenceTypeException, MalformattedFastaFileException {
         FastaHandler testhandler = FastaHandler.getInstance();
-        testhandler.addFastaEntry("TestFiles/dna.fasta", "dna");
+        testhandler.generateFastaHandlerObject("TestFiles/dna.fasta", "dna");
 
-        assertEquals(191656.03, testhandler.fastaMap.get("dna.fasta").get(0).getMolecularWeight());
-        assertEquals(1173.84, testhandler.fastaMap.get("dna.fasta").get(1).getMolecularWeight());
+        assertEquals(191656.03, testhandler.fastaObjectList.get(0).getMolecularWeight());
+        assertEquals(1173.84, testhandler.fastaObjectList.get(1).getMolecularWeight());
     }
 
     /**
@@ -53,12 +53,12 @@ public class FastaAnalyzerTest {
     @Test
     void dnaMeltingPoint() throws WrongSequenceTypeException, MalformattedFastaFileException {
         FastaHandler testhandler = FastaHandler.getInstance();
-        testhandler.addFastaEntry("TestFiles/dna.fasta", "dna");
+        testhandler.generateFastaHandlerObject("TestFiles/dna.fasta", "dna");
 
         // For sequence with length over 14
-        assertEquals(85.37354838709678, testhandler.fastaMap.get("dna.fasta").get(0).getMeltingPoint());
+        assertEquals(85.37354838709678, testhandler.fastaObjectList.get(0).getMeltingPoint());
         // For sequence with length under 14
-        assertEquals(12.0, testhandler.fastaMap.get("dna.fasta").get(1).getMeltingPoint());
+        assertEquals(12.0, testhandler.fastaObjectList.get(1).getMeltingPoint());
     }
 
     /**
@@ -72,12 +72,11 @@ public class FastaAnalyzerTest {
         // can translate DNA/RNA to peptide and make peptide calculations from there
         FastaHandler testhandler = FastaHandler.getInstance();
 
-        testhandler.addFastaEntry("TestFiles/dnatopeptide.fasta", "dna");
-        testhandler.addFastaEntry("TestFiles/rnatopeptide.fasta", "rna");
+        testhandler.generateFastaHandlerObject("TestFiles/dnatopeptide.fasta", "dna");
+        assertEquals(0.9968388513224302, testhandler.fastaObjectList.get(0).getNetCharge());
 
-
-        assertEquals(0.9968388513224302, testhandler.fastaMap.get("dnatopeptide.fasta").get(0).getNetCharge());
-        assertEquals(0.9968388513224302, testhandler.fastaMap.get("rnatopeptide.fasta").get(0).getNetCharge());
+        testhandler.generateFastaHandlerObject("TestFiles/rnatopeptide.fasta", "rna");
+        assertEquals(0.9968388513224302, testhandler.fastaObjectList.get(0).getNetCharge());
     }
 
 
@@ -91,10 +90,10 @@ public class FastaAnalyzerTest {
     @Test
     void rnaGC() throws WrongSequenceTypeException, MalformattedFastaFileException {
         FastaHandler testhandler = FastaHandler.getInstance();
-        testhandler.addFastaEntry("TestFiles/rna.fasta", "rna");
+        testhandler.generateFastaHandlerObject("TestFiles/rna.fasta", "rna");
 
-        assertEquals(0.3333333333333333, testhandler.fastaMap.get("rna.fasta").get(0).getGcEnrichment());
-        assertEquals(0.5, testhandler.fastaMap.get("rna.fasta").get(1).getGcEnrichment());
+        assertEquals(0.3333333333333333, testhandler.fastaObjectList.get(0).getGcEnrichment());
+        assertEquals(0.5, testhandler.fastaObjectList.get(1).getGcEnrichment());
     }
 
     /**
@@ -105,10 +104,10 @@ public class FastaAnalyzerTest {
     @Test
     void rnaMolecularWeight() throws WrongSequenceTypeException, MalformattedFastaFileException {
         FastaHandler testhandler = FastaHandler.getInstance();
-        testhandler.addFastaEntry("TestFiles/rna.fasta", "rna");
+        testhandler.generateFastaHandlerObject("TestFiles/rna.fasta", "rna");
 
-        assertEquals(1739.1999999999998, testhandler.fastaMap.get("rna.fasta").get(0).getMolecularWeight());
-        assertEquals(1126.8, testhandler.fastaMap.get("rna.fasta").get(1).getMolecularWeight());
+        assertEquals(1739.1999999999998, testhandler.fastaObjectList.get(0).getMolecularWeight());
+        assertEquals(1126.8, testhandler.fastaObjectList.get(1).getMolecularWeight());
     }
 
     /**
@@ -119,9 +118,9 @@ public class FastaAnalyzerTest {
     @Test
     void peptideNetCharge() throws WrongSequenceTypeException, MalformattedFastaFileException {
         FastaHandler testhandler = FastaHandler.getInstance();
-        testhandler.addFastaEntry("TestFiles/peptide.fasta", "peptide");
+        testhandler.generateFastaHandlerObject("TestFiles/peptide.fasta", "peptide");
 
-        assertEquals(-1.4247671868363128, testhandler.fastaMap.get("peptide.fasta").get(0).getNetCharge());
+        assertEquals(-1.4247671868363128, testhandler.fastaObjectList.get(0).getNetCharge());
 
     }
 
@@ -133,43 +132,43 @@ public class FastaAnalyzerTest {
     @Test
     void peptideIsoelectricPoint() throws WrongSequenceTypeException, MalformattedFastaFileException {
         FastaHandler testhandler = FastaHandler.getInstance();
-        testhandler.addFastaEntry("TestFiles/peptide.fasta", "peptide");
+        testhandler.generateFastaHandlerObject("TestFiles/peptide.fasta", "peptide");
 
-        assertEquals(6.333508902276007, testhandler.fastaMap.get("peptide.fasta").get(0).getIsoelectricPoint());
+        assertEquals(6.333508902276007, testhandler.fastaObjectList.get(0).getIsoelectricPoint());
     }
 
-    /**
-     * The Singleton is able to append a new file when called again.
-     * The Class FastaHandler should remeber the input Files and should not parse douplicate files.
-     *
-     * @throws MalformattedFastaFileException if File is formatted not in Fasta Format
-     */
-    @Test
-    void singletonSetUp() throws WrongSequenceTypeException, MalformattedFastaFileException {
-        FastaHandler testhandler = FastaHandler.getInstance();
-        testhandler.addFastaEntry("TestFiles/dna.fasta", "dna");
-        testhandler.addFastaEntry("TestFiles/dna.fasta");
-        testhandler.addFastaEntry("TestFiles/dna.fasta", "dna");
-
-
-        /*
-         * For the 4 times the input file is loaded, only 2 times it should calculate objects from the input.
-         * Since the programm remembers the input given with a proper sequence type, but dont remebers the input when given none
-         * sequence type. So 4 Objects are created for 2 entrys in the input file
-         */
-        assertEquals(2, testhandler.fastaMap.get("dna.fasta").size());
-        assertEquals(2, testhandler.fastaMap.get("dna-ambiguous.fasta").size());
-
-        /*
-         * The first time the input gets read, the programm calculates metadata because the sequence type is provided
-         * The second time objects are getting created with no specified sequence type, so no calculations are done
-         */
-        assertEquals(0.5, testhandler.fastaMap.get("dna.fasta").get(1).getGcEnrichment());
-        assertEquals(">seqID 1337", testhandler.fastaMap.get("dna.fasta").get(1).getSeqID());
-
-        assertEquals(0.0, testhandler.fastaMap.get("dna-ambiguous.fasta").get(1).getGcEnrichment());
-        assertEquals(">seqID 1337", testhandler.fastaMap.get("dna-ambiguous.fasta").get(1).getSeqID());
-    }
+//    /**
+//     * The Singleton is able to append a new file when called again.
+//     * The Class FastaHandler should remeber the input Files and should not parse douplicate files.
+//     *
+//     * @throws MalformattedFastaFileException if File is formatted not in Fasta Format
+//     */
+//    @Test
+//    void singletonSetUp() throws WrongSequenceTypeException, MalformattedFastaFileException {
+//        FastaHandler testhandler = FastaHandler.getInstance();
+//        testhandler.addFastaEntry("TestFiles/dna.fasta", "dna");
+//        testhandler.addFastaEntry("TestFiles/dna.fasta");
+//        testhandler.addFastaEntry("TestFiles/dna.fasta", "dna");
+//
+//
+//        /*
+//         * For the 4 times the input file is loaded, only 2 times it should calculate objects from the input.
+//         * Since the programm remembers the input given with a proper sequence type, but dont remebers the input when given none
+//         * sequence type. So 4 Objects are created for 2 entrys in the input file
+//         */
+//        assertEquals(2, testhandler.fastaMap.get("dna.fasta").size());
+//        assertEquals(2, testhandler.fastaMap.get("dna-ambiguous.fasta").size());
+//
+//        /*
+//         * The first time the input gets read, the programm calculates metadata because the sequence type is provided
+//         * The second time objects are getting created with no specified sequence type, so no calculations are done
+//         */
+//        assertEquals(0.5, testhandler.fastaMap.get("dna.fasta").get(1).getGcEnrichment());
+//        assertEquals(">seqID 1337", testhandler.fastaMap.get("dna.fasta").get(1).getSeqID());
+//
+//        assertEquals(0.0, testhandler.fastaMap.get("dna-ambiguous.fasta").get(1).getGcEnrichment());
+//        assertEquals(">seqID 1337", testhandler.fastaMap.get("dna-ambiguous.fasta").get(1).getSeqID());
+//    }
 
     /**
      * Unittest for fasta format test
@@ -186,7 +185,7 @@ public class FastaAnalyzerTest {
 
         try {
             FastaHandler testhandler = FastaHandler.getInstance();
-            testhandler.addFastaEntry("TestFiles/malformated.fasta", "dNa");
+            testhandler.generateFastaHandlerObject("TestFiles/malformated.fasta", "dNa");
 
         } catch (MalformattedFastaFileException mffe) {
             hasDoubleHeader = true;
@@ -194,7 +193,7 @@ public class FastaAnalyzerTest {
 
         try {
             FastaHandler testhandler = FastaHandler.getInstance();
-            testhandler.addFastaEntry("TestFiles/malformated2.fasta", "dNa");
+            testhandler.generateFastaHandlerObject("TestFiles/malformated2.fasta", "dNa");
 
         } catch (MalformattedFastaFileException mffe) {
             hasMissingHeaderStart = true;
@@ -203,7 +202,7 @@ public class FastaAnalyzerTest {
 
         try {
             FastaHandler testhandler = FastaHandler.getInstance();
-            testhandler.addFastaEntry("TestFiles/dna.fasta", "dNa");
+            testhandler.generateFastaHandlerObject("TestFiles/dna.fasta", "dNa");
 
         } catch (MalformattedFastaFileException mffe) {
             doublecheck = false;
@@ -226,7 +225,7 @@ public class FastaAnalyzerTest {
 
         try {
             FastaHandler testhandler = FastaHandler.getInstance();
-            testhandler.addFastaEntry("TestFiles/dna.fasta", "peptide");
+            testhandler.generateFastaHandlerObject("TestFiles/dna.fasta", "peptide");
 
         } catch (WrongSequenceTypeException wste) {
             hasWrongSequenceType = true;

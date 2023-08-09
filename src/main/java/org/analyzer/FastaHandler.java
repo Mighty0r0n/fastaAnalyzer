@@ -10,8 +10,12 @@ import java.util.regex.Pattern;
  * append more Objects to this Object via the wrapper Function addFastaEntry()
  */
 public class FastaHandler {
-    Map<String, LinkedList<FastaEntry>> fastaMap = new HashMap<>();
+    LinkedList<FastaEntry> fastaObjectList = new LinkedList<>();
     private static FastaHandler instance;
+    String filename;
+    SequenceType seqType;
+    //BlockingQueue<Runnable> queue = new ArrayBlockingQueue<>(1024);
+    //ThreadPoolExecutor exe = new ThreadPoolExecutor(4, 4, 30L , TimeUnit.SECONDS, queue);
 
     /**
      * Invoke for singleton
@@ -32,11 +36,10 @@ public class FastaHandler {
      * @param fasta File to analyze
      * @param type  Type of the given FastaFile
      */
-    public void addFastaEntry(String fasta, String type) throws WrongSequenceTypeException, MalformattedFastaFileException {
-        String filename = fasta.split("/")[fasta.split("/").length - 1];
-        if (!instance.fastaMap.containsKey(filename)) {
-            this.parseFasta(fasta, type);
-        }
+    public void generateFastaHandlerObject(String fasta, String type) throws WrongSequenceTypeException, MalformattedFastaFileException {
+        this.filename = fasta.split("/")[fasta.split("/").length - 1];
+        setSequenceType(type, this.filename);
+        this.parseFasta(fasta);
     }
 
     /**
@@ -45,39 +48,18 @@ public class FastaHandler {
      *
      * @param fasta File to analyze
      */
-    public void addFastaEntry(String fasta) throws WrongSequenceTypeException, MalformattedFastaFileException {
-        if (!instance.fastaMap.containsKey(fasta.split("/")[fasta.split("/").length - 1].split("\\.")[0] + "-ambiguous.fasta")) {
-            this.parseFasta(fasta, null);
-        }
+    public void generateFastaHandlerObject(String fasta) throws WrongSequenceTypeException, MalformattedFastaFileException {
+        this.filename = fasta.split("/")[fasta.split("/").length - 1];
+        setSequenceType(null, this.filename);
+        this.parseFasta(fasta);
     }
 
-    private String insertLineBreaks(String input) {
-        StringBuilder printableSequence = new StringBuilder();
-
-        int currentIndex = 0;
-        while (currentIndex < input.length()) {
-            int endIndex = Math.min(currentIndex + 70, input.length());
-            printableSequence.append(input, currentIndex, endIndex);
-
-            if (endIndex < input.length()) {
-                printableSequence.append("\n");
-            }
-
-            currentIndex = endIndex;
-        }
-
-        return printableSequence.toString();
-    }
-
-    private SequenceType getSequenceType(String type, String filename) {
-        SequenceType seqType = SequenceType.AMBIGUOUS;
-
-        // Creating the sequenceType here enables multi file support.
-
+    private void setSequenceType(String type, String filename) {
         if (type != null) {
             try {
-                seqType = SequenceType.valueOf(type.toUpperCase());
+                this.seqType = SequenceType.valueOf(type.toUpperCase());
             } catch (IllegalArgumentException iae) {
+                this.seqType = SequenceType.AMBIGUOUS;
                 System.err.println("Invalid sequence type. \nGiven sequence type: " + type + """          
                         \nValid Sequence types:
                                         -DNA
@@ -91,6 +73,7 @@ public class FastaHandler {
                           """);
             }
         } else {
+            this.seqType = SequenceType.AMBIGUOUS;
             System.err.println("""
 
                     No Sequence Type provided. No immediate action required.
@@ -98,26 +81,14 @@ public class FastaHandler {
                     but no further metadata analysis is available from here.\s
                     Please consider to rerun the Program and submit the Sequence Type of the Fasta Sequences for further analysis.""" + "\nFile is saved as: " + filename.split("\\.")[0] + "-ambiguous.fasta in the FastaHandler");
         }
-
-        return seqType;
     }
-
-    private void setFastaMap(String filename, LinkedList<FastaEntry> entryList, SequenceType seqType) {
-        if (Objects.requireNonNull(seqType) == SequenceType.AMBIGUOUS) {
-            fastaMap.put(filename.split("\\.")[0] + "-ambiguous.fasta", entryList);
-        } else {
-            fastaMap.put(filename, entryList);
-        }
-    }
-
 
     /**
      * Parses the input fasta file and checks for format. Object gets filled here and given input file
      *
      * @param fasta input file that needs to be checked
-     * @param type  the corresponding sequence type of the input file, for getting the alphabet of the sequence
      */
-    private void parseFasta(String fasta, String type) throws MalformattedFastaFileException, WrongSequenceTypeException {
+    private void parseFasta(String fasta) throws MalformattedFastaFileException, WrongSequenceTypeException {
 
         try {
             Scanner fastaReader = new Scanner(new File(fasta));
@@ -128,8 +99,6 @@ public class FastaHandler {
             String sequenceID = "No header found";
             StringBuilder sequenceHandler = new StringBuilder();
             LinkedList<FastaEntry> entryList = new LinkedList<>();
-            String filename = fasta.split("/")[fasta.split("/").length - 1];
-            SequenceType seqType = getSequenceType(type, filename);
 
             while (fastaReader.hasNextLine()) {
                 String line = fastaReader.nextLine().trim();
@@ -137,7 +106,7 @@ public class FastaHandler {
                 if (inSequence && line.startsWith(">")) {
                     inHeader = false;
                     inSequence = false;
-                    entryList.get(entryList.size() - 1).settingSequenceProperties(sequenceHandler.toString(), seqType);
+                    entryList.get(entryList.size() - 1).settingSequenceData(sequenceHandler.toString(), this.seqType);
                 }
 
                 if (line.startsWith(">")) {
@@ -156,7 +125,7 @@ public class FastaHandler {
                     }
                 } else if (inHeader) {
                     sequenceHandler.append(line.toUpperCase());
-                    checkSequenceType(seqType, line.toUpperCase());
+                    checkSequenceType(this.seqType, line.toUpperCase());
                     inSequence = true;
                 }
             }
@@ -168,12 +137,12 @@ public class FastaHandler {
                 throw new MalformattedFastaFileException("Invalid format: " + sequenceID);
             }
 
-            entryList.get(entryList.size() - 1).settingSequenceProperties(sequenceHandler.toString(), seqType);
+            entryList.get(entryList.size() - 1).settingSequenceData(sequenceHandler.toString(), this.seqType);
 
-            setFastaMap(filename, entryList, seqType);
+            this.fastaObjectList = entryList;
 
         } catch (FileNotFoundException fnfe) {
-            fnfe.printStackTrace();
+            fnfe.getMessage();
         }
     }
 
@@ -183,18 +152,16 @@ public class FastaHandler {
      * @param outputDirectory specifies the Directory where the files are saved to
      */
     public void generateOutputFiles(String outputDirectory, boolean verbose, boolean translate) {
-        for (String inFile : this.fastaMap.keySet()) {
-            String outFile = inFile.split("\\.")[0] + "_analyzed.fasta";
-            try (BufferedWriter writer = new BufferedWriter(new FileWriter(outputDirectory + outFile))) {
-                List<FastaEntry> entries = this.fastaMap.get(inFile);
-                for (FastaEntry entry : entries) {
-                    writeEntry(writer, entry, verbose, translate);
-                }
-            } catch (IOException e) {
-                e.printStackTrace();
+        String outFile = this.filename.split("\\.")[0] + "_analyzed.fasta";
+        try (BufferedWriter writer = new BufferedWriter(new FileWriter(outputDirectory + outFile))) {
+            for (FastaEntry entry : this.fastaObjectList) {
+                writeEntry(writer, entry, verbose, translate);
             }
+        } catch (IOException e) {
+            e.getMessage();
         }
     }
+
 
     private void writeEntry(BufferedWriter writer, FastaEntry entry, boolean verbose, boolean translate) throws IOException {
         writeVerboseOutput(writer, entry.getSeqID(), verbose);
@@ -214,15 +181,33 @@ public class FastaHandler {
         writer.newLine();
     }
 
-    private void writeVerboseOutput(BufferedWriter writer, String text, boolean verbose) throws IOException {
-        writer.write(text);
+    private void writeVerboseOutput(BufferedWriter writer, String fastaLine, boolean verbose) throws IOException {
+        writer.write(fastaLine);
         if (verbose) {
-            if (text.startsWith(">")) {
-                System.out.println("\n" + text);
+            if (fastaLine.startsWith(">")) {
+                System.out.println("\n" + fastaLine);
             } else {
-                System.out.print(text);
+                System.out.print(fastaLine);
             }
         }
+    }
+
+    private String insertLineBreaks(String input) {
+        StringBuilder printableSequence = new StringBuilder();
+
+        int currentIndex = 0;
+        while (currentIndex < input.length()) {
+            int endIndex = Math.min(currentIndex + 70, input.length());
+            printableSequence.append(input, currentIndex, endIndex);
+
+            if (endIndex < input.length()) {
+                printableSequence.append("\n");
+            }
+
+            currentIndex = endIndex;
+        }
+
+        return printableSequence.toString();
     }
 
     private void checkSequenceType(SequenceType seqtype, String sequence) throws WrongSequenceTypeException {
@@ -252,14 +237,5 @@ public class FastaHandler {
                 }
             }
         }
-    }
-
-    /**
-     * Getter for the fastaMap dictionary, containing all the parsed information
-     *
-     * @return fastaMap with all parsed information
-     */
-    public Map<String, LinkedList<FastaEntry>> getFastaMap() {
-        return fastaMap;
     }
 }

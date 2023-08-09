@@ -7,7 +7,13 @@ import java.util.Map;
 /**
  * Class that represents one fasta entry and saves metadata about it.
  */
-class FastaEntry implements EntryI {
+class FastaEntry implements Runnable ,EntryI {
+    @Override
+    public void run() {
+        System.out.println(Thread.currentThread().getName() + " starting calculations");
+        //calculateSequenceProperties(this.seqType);
+    }
+
     /**
      * Static Class for Sequence manipulation in context of nucleotype or peptide sequences
      */
@@ -148,11 +154,20 @@ class FastaEntry implements EntryI {
      * for the calculations.
      *
      * @param sequenceHandler input sequence
-     * @param seqType         enum for sequence type
      */
-    void settingSequenceProperties(String sequenceHandler, SequenceType seqType) {
+    void settingSequenceData(String sequenceHandler, SequenceType seqType) {
         this.sequence = sequenceHandler.toUpperCase();
         this.sequenceLength = sequenceHandler.length();
+        this.calcAlphabet();
+        this.setTranslatedSequence(seqType);
+        this.setGC(seqType);
+        this.setMolecularWeight(seqType);
+        this.setMeltingPoint(seqType);
+        this.setNetCharge(seqType);
+        this.setIsoelectricPoint(seqType, 7.0);
+    }
+
+    void calculateSequenceProperties(SequenceType seqType){
         this.calcAlphabet();
         this.setTranslatedSequence(seqType);
         this.setGC(seqType);

@@ -1,8 +1,9 @@
-package org.analyzer;
+import org.analyzer.FastaHandler;
+import org.analyzer.MalformattedFastaFileException;
+import org.analyzer.WrongSequenceTypeException;
+import org.apache.commons.cli.*;
 
 import java.io.FileNotFoundException;
-
-import org.apache.commons.cli.*;
 
 /**
  * Runnable org.analyzer.Main Method for the FastaAnalyzer
@@ -45,8 +46,6 @@ public class Main {
                 } catch (WrongSequenceTypeException | MalformattedFastaFileException wste) {
                     wste.getMessage();
                 }
-
-
         handler.generateOutputFiles(line.getOptionValue("o"), line.hasOption("v"), line.hasOption("p"));
         System.out.println("\nProgram finished");
     }
