@@ -227,35 +227,6 @@ public class FastaHandler {
         writer.newLine();
     }
 
-//    private void writeEntry(BufferedWriter writer, FastaEntry entry, boolean verbose, boolean translate) throws IOException {
-//        writeVerboseOutput(writer, entry.getSeqID(), verbose);
-//        writer.newLine();
-//
-//        writeVerboseOutput(writer, ";Sequence Length: " + entry.getSequenceLength() + "\t", verbose);
-//        writeVerboseOutput(writer, "Molecular Weight: " + String.format("%.2f", entry.getMolecularWeight()) + "g/mole\t", entry.getMolecularWeight() != 0.0 && verbose);
-//        writeVerboseOutput(writer, "Melting Point: " + String.format("%.2f", entry.getMeltingPoint()) + "°C\t", entry.getMeltingPoint() != 0.0 && verbose);
-//        writeVerboseOutput(writer, "GC Enrichment: " + String.format("%.2f", entry.getGcEnrichment() * 100) + "%\t", entry.getGcEnrichment() != 0.0 && verbose);
-//        writeVerboseOutput(writer, "Net Charge(at ph 7): " + String.format("%.2f", entry.getNetCharge()) + "\t", entry.getNetCharge() != 0.0 && verbose);
-//        writeVerboseOutput(writer, "Iso electricPoint: " + String.format("%.2f", entry.getIsoelectricPoint()) + "pH\t", entry.getIsoelectricPoint() != 0.0 && verbose);
-//
-//        writer.newLine();
-//
-//        String sequenceToWrite = (translate && entry.getTranslatedSequence() != null) ? entry.getTranslatedSequence() : entry.getSequence();
-//        writer.write(insertLineBreaks(sequenceToWrite));
-//        writer.newLine();
-//    }
-//
-//    private void writeVerboseOutput(BufferedWriter writer, String fastaLine, boolean verbose) throws IOException {
-//        writer.write(fastaLine);
-//        if (verbose) {
-//            if (fastaLine.startsWith(">")) {
-//                System.out.println("\n" + fastaLine);
-//            } else {
-//                System.out.print(fastaLine);
-//            }
-//        }
-//    }
-
     private String insertLineBreaks(String input) {
         StringBuilder printableSequence = new StringBuilder();
 

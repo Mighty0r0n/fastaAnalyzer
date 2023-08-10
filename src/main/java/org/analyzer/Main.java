@@ -14,7 +14,7 @@ import org.apache.commons.cli.*;
 public class Main {
     /**
      * org.analyzer.Main Logic for the FastaAnalyzer. Analyses every input file.
-     * Every input file needs a correpsonding sequence type
+     * Every input file needs a corresponding sequence type
      *
      * @param args arguments given to the main from the CLI, these getting parsed by commons-cli
      * @throws FileNotFoundException incorrect filepath
@@ -70,9 +70,9 @@ public class Main {
      * @throws ParseException non parsing
      */
     private static void testRuntime() throws ParseException {
-        String[] args = {"-i", "TestFiles/test.fasta", "-s" ,"dna" ,"-t" ,"4"};
+        String[] args = {"-i", "TestFiles/test.fasta", "-s", "dna", "-t", "4"};
         long runtime4Threads = 0;
-        for (int i = 0; i < 100; i++){
+        for (int i = 0; i < 100; i++) {
             long startTime = System.nanoTime();
             benchmark_main(args);
             long endTime = System.nanoTime();
@@ -81,9 +81,9 @@ public class Main {
         }
 
 
-        String[] args2 = {"-i", "TestFiles/test.fasta", "-s" ,"dna" ,"-t" ,"1"};
+        String[] args2 = {"-i", "TestFiles/test.fasta", "-s", "dna", "-t", "1"};
         long runtime1Threads = 0;
-        for (int i = 0; i < 100; i++){
+        for (int i = 0; i < 100; i++) {
             long startTime = System.nanoTime();
             benchmark_main(args2);
             long endTime = System.nanoTime();
