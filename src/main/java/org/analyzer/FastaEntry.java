@@ -7,13 +7,7 @@ import java.util.Map;
 /**
  * Class that represents one fasta entry and saves metadata about it.
  */
-class FastaEntry implements Runnable ,EntryI {
-    @Override
-    public void run() {
-        System.out.println(Thread.currentThread().getName() + " starting calculations");
-        //calculateSequenceProperties(this.seqType);
-    }
-
+class FastaEntry implements Runnable, EntryI {
     /**
      * Static Class for Sequence manipulation in context of nucleotype or peptide sequences
      */
@@ -150,24 +144,32 @@ class FastaEntry implements Runnable ,EntryI {
     }
 
     /**
+     * Implemented run Method from runnable. Calculations for FastaEntry Objects are done with the help of a
+     * wrapper method.
+     */
+    @Override
+    public void run() {
+        //System.out.println(Thread.currentThread().getName() + " starting calculations for : " + this.seqID + "Number of Threads: " + FastaHandler.getInstance().numberThreads);
+        calculateSequenceProperties(FastaHandler.getInstance().seqType);
+    }
+
+    /**
      * Sets all the Metadata storable in this Class. The SequenceType enum holds all formulas
      * for the calculations.
      *
      * @param sequenceHandler input sequence
      */
-    void settingSequenceData(String sequenceHandler, SequenceType seqType) {
+    void settingSequenceData(String sequenceHandler) {
         this.sequence = sequenceHandler.toUpperCase();
         this.sequenceLength = sequenceHandler.length();
-        this.calcAlphabet();
-        this.setTranslatedSequence(seqType);
-        this.setGC(seqType);
-        this.setMolecularWeight(seqType);
-        this.setMeltingPoint(seqType);
-        this.setNetCharge(seqType);
-        this.setIsoelectricPoint(seqType, 7.0);
     }
 
-    void calculateSequenceProperties(SequenceType seqType){
+    /**
+     * Wrapper for calculations to be done.
+     *
+     * @param seqType SequenceType Enum for the calculation
+     */
+    void calculateSequenceProperties(SequenceType seqType) {
         this.calcAlphabet();
         this.setTranslatedSequence(seqType);
         this.setGC(seqType);

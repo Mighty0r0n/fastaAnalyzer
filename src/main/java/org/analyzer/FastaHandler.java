@@ -3,6 +3,9 @@ package org.analyzer;
 import java.io.*;
 import java.util.*;
 import java.lang.StringBuilder;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 import java.util.regex.Pattern;
 
 /**
@@ -10,12 +13,11 @@ import java.util.regex.Pattern;
  * append more Objects to this Object via the wrapper Function addFastaEntry()
  */
 public class FastaHandler {
-    LinkedList<FastaEntry> fastaObjectList = new LinkedList<>();
     private static FastaHandler instance;
+    int numberThreads;
+    LinkedList<FastaEntry> fastaObjectList = new LinkedList<>();
     String filename;
     SequenceType seqType;
-    //BlockingQueue<Runnable> queue = new ArrayBlockingQueue<>(1024);
-    //ThreadPoolExecutor exe = new ThreadPoolExecutor(4, 4, 30L , TimeUnit.SECONDS, queue);
 
     /**
      * Invoke for singleton
@@ -27,6 +29,38 @@ public class FastaHandler {
             instance = new FastaHandler();
         }
         return instance;
+    }
+
+    void verbosePrinting(){
+        for (FastaEntry entry : this.fastaObjectList){
+            System.out.println(entry.getSeqID());
+            System.out.println(entry.getSequenceLength());
+            System.out.println(entry.getGcEnrichment());
+            System.out.println(entry.getMeltingPoint());
+            System.out.println(entry.getMolecularWeight());
+            System.out.println(entry.getIsoelectricPoint());
+            System.out.println(entry.getNetCharge());
+        }
+    }
+
+
+    /**
+     * Enables Multithreading
+     */
+    void processFastaEntries() {
+        ExecutorService threadPool = Executors.newFixedThreadPool(this.numberThreads);
+
+        for (FastaEntry entry : this.fastaObjectList) {
+            threadPool.submit(entry);
+        }
+        threadPool.shutdown();
+        try {
+            if (!threadPool.awaitTermination(100, TimeUnit.MINUTES)) {
+                System.err.println("Threads doesn't finish work within given time-limit of 100 Minutes.");
+            }
+        } catch (InterruptedException e) {
+            e.getMessage();
+        }
     }
 
     /**
@@ -106,7 +140,7 @@ public class FastaHandler {
                 if (inSequence && line.startsWith(">")) {
                     inHeader = false;
                     inSequence = false;
-                    entryList.get(entryList.size() - 1).settingSequenceData(sequenceHandler.toString(), this.seqType);
+                    entryList.get(entryList.size() - 1).settingSequenceData(sequenceHandler.toString());
                 }
 
                 if (line.startsWith(">")) {
@@ -137,7 +171,7 @@ public class FastaHandler {
                 throw new MalformattedFastaFileException("Invalid format: " + sequenceID);
             }
 
-            entryList.get(entryList.size() - 1).settingSequenceData(sequenceHandler.toString(), this.seqType);
+            entryList.get(entryList.size() - 1).settingSequenceData(sequenceHandler.toString());
 
             this.fastaObjectList = entryList;
 
@@ -151,28 +185,40 @@ public class FastaHandler {
      *
      * @param outputDirectory specifies the Directory where the files are saved to
      */
-    public void generateOutputFiles(String outputDirectory, boolean verbose, boolean translate) {
+    public void generateOutputFiles(String outputDirectory, boolean translate) {
         String outFile = this.filename.split("\\.")[0] + "_analyzed.fasta";
+        if (translate){
+            outFile = this.filename.split("\\.")[0] + "_analyzed_translated.fasta";
+        }
         try (BufferedWriter writer = new BufferedWriter(new FileWriter(outputDirectory + outFile))) {
             for (FastaEntry entry : this.fastaObjectList) {
-                writeEntry(writer, entry, verbose, translate);
+                writeEntry(writer, entry, translate);
             }
         } catch (IOException e) {
             e.getMessage();
         }
     }
 
-
-    private void writeEntry(BufferedWriter writer, FastaEntry entry, boolean verbose, boolean translate) throws IOException {
-        writeVerboseOutput(writer, entry.getSeqID(), verbose);
+    private void writeEntry(BufferedWriter writer, FastaEntry entry, boolean translate) throws IOException {
+        writer.write(entry.getSeqID());
         writer.newLine();
 
-        writeVerboseOutput(writer, ";Sequence Length: " + entry.getSequenceLength() + "\t", verbose);
-        writeVerboseOutput(writer, "Molecular Weight: " + String.format("%.2f", entry.getMolecularWeight()) + "g/mole\t", entry.getMolecularWeight() != 0.0 && verbose);
-        writeVerboseOutput(writer, "Melting Point: " + String.format("%.2f", entry.getMeltingPoint()) + "°C\t", entry.getMeltingPoint() != 0.0 && verbose);
-        writeVerboseOutput(writer, "GC Enrichment: " + String.format("%.2f", entry.getGcEnrichment() * 100) + "%\t", entry.getGcEnrichment() != 0.0 && verbose);
-        writeVerboseOutput(writer, "Net Charge(at ph 7): " + String.format("%.2f", entry.getNetCharge()) + "\t", entry.getNetCharge() != 0.0 && verbose);
-        writeVerboseOutput(writer, "Iso electricPoint: " + String.format("%.2f", entry.getIsoelectricPoint()) + "pH\t", entry.getIsoelectricPoint() != 0.0 && verbose);
+        writer.write(";Sequence Length: " + entry.getSequenceLength() + "\t");
+        if (entry.getMolecularWeight() != 0.0) {
+            writer.write("Molecular Weight: " + String.format("%.2f", entry.getMolecularWeight()) + "g/mole\t");
+        }
+        if (entry.getMeltingPoint() != 0.0) {
+            writer.write("Melting Point: " + String.format("%.2f", entry.getMeltingPoint()) + "°C\t");
+        }
+        if (entry.getGcEnrichment() != 0.0) {
+            writer.write("GC Enrichment: " + String.format("%.2f", entry.getGcEnrichment() * 100) + "%\t");
+        }
+        if (entry.getNetCharge() != 0.0) {
+            writer.write("Net Charge(at ph 7): " + String.format("%.2f", entry.getNetCharge()) + "\t");
+        }
+        if (entry.getIsoelectricPoint() != 0.0) {
+            writer.write("Iso electricPoint: " + String.format("%.2f", entry.getIsoelectricPoint()) + "pH\t");
+        }
 
         writer.newLine();
 
@@ -181,16 +227,34 @@ public class FastaHandler {
         writer.newLine();
     }
 
-    private void writeVerboseOutput(BufferedWriter writer, String fastaLine, boolean verbose) throws IOException {
-        writer.write(fastaLine);
-        if (verbose) {
-            if (fastaLine.startsWith(">")) {
-                System.out.println("\n" + fastaLine);
-            } else {
-                System.out.print(fastaLine);
-            }
-        }
-    }
+//    private void writeEntry(BufferedWriter writer, FastaEntry entry, boolean verbose, boolean translate) throws IOException {
+//        writeVerboseOutput(writer, entry.getSeqID(), verbose);
+//        writer.newLine();
+//
+//        writeVerboseOutput(writer, ";Sequence Length: " + entry.getSequenceLength() + "\t", verbose);
+//        writeVerboseOutput(writer, "Molecular Weight: " + String.format("%.2f", entry.getMolecularWeight()) + "g/mole\t", entry.getMolecularWeight() != 0.0 && verbose);
+//        writeVerboseOutput(writer, "Melting Point: " + String.format("%.2f", entry.getMeltingPoint()) + "°C\t", entry.getMeltingPoint() != 0.0 && verbose);
+//        writeVerboseOutput(writer, "GC Enrichment: " + String.format("%.2f", entry.getGcEnrichment() * 100) + "%\t", entry.getGcEnrichment() != 0.0 && verbose);
+//        writeVerboseOutput(writer, "Net Charge(at ph 7): " + String.format("%.2f", entry.getNetCharge()) + "\t", entry.getNetCharge() != 0.0 && verbose);
+//        writeVerboseOutput(writer, "Iso electricPoint: " + String.format("%.2f", entry.getIsoelectricPoint()) + "pH\t", entry.getIsoelectricPoint() != 0.0 && verbose);
+//
+//        writer.newLine();
+//
+//        String sequenceToWrite = (translate && entry.getTranslatedSequence() != null) ? entry.getTranslatedSequence() : entry.getSequence();
+//        writer.write(insertLineBreaks(sequenceToWrite));
+//        writer.newLine();
+//    }
+//
+//    private void writeVerboseOutput(BufferedWriter writer, String fastaLine, boolean verbose) throws IOException {
+//        writer.write(fastaLine);
+//        if (verbose) {
+//            if (fastaLine.startsWith(">")) {
+//                System.out.println("\n" + fastaLine);
+//            } else {
+//                System.out.print(fastaLine);
+//            }
+//        }
+//    }
 
     private String insertLineBreaks(String input) {
         StringBuilder printableSequence = new StringBuilder();
