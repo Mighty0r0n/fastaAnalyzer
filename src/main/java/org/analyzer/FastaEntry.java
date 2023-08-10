@@ -133,6 +133,7 @@ class FastaEntry implements Runnable, EntryI {
     private double meltingPoint;
     private double netCharge;
     private double isoelectricPoint;
+    boolean verboseWorkers = false;
 
     /**
      * Package wide Constructor. Needs a SeqID to get instantiated
@@ -149,7 +150,9 @@ class FastaEntry implements Runnable, EntryI {
      */
     @Override
     public void run() {
-        //System.out.println(Thread.currentThread().getName() + " starting calculations for : " + this.seqID + "Number of Threads: " + FastaHandler.getInstance().numberThreads);
+        if (this.verboseWorkers) {
+            System.out.println(Thread.currentThread().getName() + " starting calculations for : " + this.seqID.split(">")[1] + " Number of Threads: " + FastaHandler.getInstance().numberThreads);
+        }
         calculateSequenceProperties(FastaHandler.getInstance().seqType);
     }
 
@@ -250,7 +253,6 @@ class FastaEntry implements Runnable, EntryI {
      * @param seqType SequenceType Enum for the calculation
      * @param pH      Initial pH to start the recursive Function. (typically 7)
      */
-    // Extractable logic?
     @Override
     public void setIsoelectricPoint(SequenceType seqType, Double pH) {
 

@@ -18,6 +18,7 @@ import static org.junit.jupiter.api.Assertions.*;
  */
 public class FastaAnalyzerTest {
 
+    public boolean verboseWorkers = false;
     /**
      * Unittest, for testing the GC enrichment method. Used a sequence with known properties.
      *
@@ -26,7 +27,7 @@ public class FastaAnalyzerTest {
     @Test
     void dnaGC() throws WrongSequenceTypeException, MalformattedFastaFileException {
         FastaHandler testhandler = FastaHandler.getInstance();
-        testhandler.generateFastaHandlerObject("TestFiles/dna.fasta", "dna");
+        testhandler.generateFastaHandlerObject("TestFiles/dna.fasta", "dna", this.verboseWorkers);
         testhandler.numberThreads = 1;
         testhandler.processFastaEntries();
 
@@ -42,7 +43,7 @@ public class FastaAnalyzerTest {
     @Test
     void dnaMolecularWeight() throws WrongSequenceTypeException, MalformattedFastaFileException {
         FastaHandler testhandler = FastaHandler.getInstance();
-        testhandler.generateFastaHandlerObject("TestFiles/dna.fasta", "dna");
+        testhandler.generateFastaHandlerObject("TestFiles/dna.fasta", "dna", this.verboseWorkers);
         testhandler.numberThreads = 1;
         testhandler.processFastaEntries();
 
@@ -58,7 +59,7 @@ public class FastaAnalyzerTest {
     @Test
     void dnaMeltingPoint() throws WrongSequenceTypeException, MalformattedFastaFileException {
         FastaHandler testhandler = FastaHandler.getInstance();
-        testhandler.generateFastaHandlerObject("TestFiles/dna.fasta", "dna");
+        testhandler.generateFastaHandlerObject("TestFiles/dna.fasta", "dna", this.verboseWorkers);
         testhandler.numberThreads = 1;
         testhandler.processFastaEntries();
 
@@ -81,11 +82,11 @@ public class FastaAnalyzerTest {
         testhandler.numberThreads = 1;
 
 
-        testhandler.generateFastaHandlerObject("TestFiles/dnatopeptide.fasta", "dna");
+        testhandler.generateFastaHandlerObject("TestFiles/dnatopeptide.fasta", "dna", this.verboseWorkers);
         testhandler.processFastaEntries();
         assertEquals(0.9968388513224302, testhandler.fastaObjectList.get(0).getNetCharge());
 
-        testhandler.generateFastaHandlerObject("TestFiles/rnatopeptide.fasta", "rna");
+        testhandler.generateFastaHandlerObject("TestFiles/rnatopeptide.fasta", "rna", this.verboseWorkers);
         testhandler.processFastaEntries();
         assertEquals(0.9968388513224302, testhandler.fastaObjectList.get(0).getNetCharge());
     }
@@ -101,7 +102,7 @@ public class FastaAnalyzerTest {
     @Test
     void rnaGC() throws WrongSequenceTypeException, MalformattedFastaFileException {
         FastaHandler testhandler = FastaHandler.getInstance();
-        testhandler.generateFastaHandlerObject("TestFiles/rna.fasta", "rna");
+        testhandler.generateFastaHandlerObject("TestFiles/rna.fasta", "rna", this.verboseWorkers);
         testhandler.numberThreads = 1;
         testhandler.processFastaEntries();
 
@@ -117,7 +118,7 @@ public class FastaAnalyzerTest {
     @Test
     void rnaMolecularWeight() throws WrongSequenceTypeException, MalformattedFastaFileException {
         FastaHandler testhandler = FastaHandler.getInstance();
-        testhandler.generateFastaHandlerObject("TestFiles/rna.fasta", "rna");
+        testhandler.generateFastaHandlerObject("TestFiles/rna.fasta", "rna", this.verboseWorkers);
         testhandler.numberThreads = 1;
         testhandler.processFastaEntries();
 
@@ -133,7 +134,7 @@ public class FastaAnalyzerTest {
     @Test
     void peptideNetCharge() throws WrongSequenceTypeException, MalformattedFastaFileException {
         FastaHandler testhandler = FastaHandler.getInstance();
-        testhandler.generateFastaHandlerObject("TestFiles/peptide.fasta", "peptide");
+        testhandler.generateFastaHandlerObject("TestFiles/peptide.fasta", "peptide", this.verboseWorkers);
         testhandler.numberThreads = 1;
         testhandler.processFastaEntries();
 
@@ -149,7 +150,7 @@ public class FastaAnalyzerTest {
     @Test
     void peptideIsoelectricPoint() throws WrongSequenceTypeException, MalformattedFastaFileException {
         FastaHandler testhandler = FastaHandler.getInstance();
-        testhandler.generateFastaHandlerObject("TestFiles/peptide.fasta", "peptide");
+        testhandler.generateFastaHandlerObject("TestFiles/peptide.fasta", "peptide", this.verboseWorkers);
         testhandler.numberThreads = 1;
         testhandler.processFastaEntries();
 
@@ -171,7 +172,7 @@ public class FastaAnalyzerTest {
 
         try {
             FastaHandler testhandler = FastaHandler.getInstance();
-            testhandler.generateFastaHandlerObject("TestFiles/malformated.fasta", "dNa");
+            testhandler.generateFastaHandlerObject("TestFiles/malformated.fasta", "dNa", this.verboseWorkers);
 
         } catch (MalformattedFastaFileException mffe) {
             hasDoubleHeader = true;
@@ -179,7 +180,7 @@ public class FastaAnalyzerTest {
 
         try {
             FastaHandler testhandler = FastaHandler.getInstance();
-            testhandler.generateFastaHandlerObject("TestFiles/malformated2.fasta", "dNa");
+            testhandler.generateFastaHandlerObject("TestFiles/malformated2.fasta", "dNa", this.verboseWorkers);
 
         } catch (MalformattedFastaFileException mffe) {
             hasMissingHeaderStart = true;
@@ -188,7 +189,7 @@ public class FastaAnalyzerTest {
 
         try {
             FastaHandler testhandler = FastaHandler.getInstance();
-            testhandler.generateFastaHandlerObject("TestFiles/dna.fasta", "dNa");
+            testhandler.generateFastaHandlerObject("TestFiles/dna.fasta", "dNa", this.verboseWorkers);
 
         } catch (MalformattedFastaFileException mffe) {
             doublecheck = false;
@@ -211,7 +212,7 @@ public class FastaAnalyzerTest {
 
         try {
             FastaHandler testhandler = FastaHandler.getInstance();
-            testhandler.generateFastaHandlerObject("TestFiles/dna.fasta", "peptide");
+            testhandler.generateFastaHandlerObject("TestFiles/dna.fasta", "peptide", this.verboseWorkers);
 
         } catch (WrongSequenceTypeException wste) {
             hasWrongSequenceType = true;

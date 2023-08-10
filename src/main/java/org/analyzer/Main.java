@@ -36,13 +36,64 @@ public class Main {
         long endTime = System.nanoTime();
         long elapsedTime = endTime - startTime;
         double elapsedTimeInSeconds = (double) elapsedTime / 1_000_000_000.0;
-        System.out.println("-> Elapsed time: " + elapsedTimeInSeconds + " seconds for analzying Input File");
+        System.out.println("-> Elapsed time: " + elapsedTimeInSeconds + " seconds for analzying Input File: " + handler.filename);
 
         checkForOutput(line, handler);
 
         // Run testRuntime() for threading benchmark
         //testRuntime();
 
+    }
+
+    private static CommandLine createCommandLineParser(String[] args, int defaultThreads) throws ParseException {
+        CommandLineParser parser = new DefaultParser();
+        Options options = new Options();
+        options.addOption(Option.builder("o").argName("outpath").hasArg().longOpt("Output-Path").build());
+        options.addOption(Option.builder("i").argName("infile").hasArgs().longOpt("Input-Path").valueSeparator(' ').build());
+        options.addOption(Option.builder("s").argName("sequence_type").hasArgs().longOpt("Sequence-Type").valueSeparator(' ').build());
+        options.addOption(Option.builder("v").argName("verbose").longOpt("Verbose").desc("Make the programm output verbose").build());
+        options.addOption(Option.builder("w").argName("workers").longOpt("Verbose.Workers").desc("Print out task of individual workers").build());
+        options.addOption(Option.builder("p").argName("peptide-translate").longOpt("Translate-to-Peptide").desc("Translate Dna/Rna to peptide sequence").type(Integer.class).build());
+        options.addOption(Option.builder("t").argName("threads").hasArg().desc("Number of threads (default: " + defaultThreads + ")").longOpt("Number of Threads").build());
+
+        return parser.parse(options, args);
+    }
+
+    private static void getNumberOfThreads(CommandLine line, int defaultThreads) {
+        int requestedThreads = Integer.parseInt(line.getOptionValue("t"));
+        if (line.hasOption("t") && requestedThreads <= Runtime.getRuntime().availableProcessors()) {
+            FastaHandler.getInstance().numberThreads = requestedThreads;
+        } else {
+            System.err.println("-> Thread-Assertion-Error: Requested number of threads exceeds available Processors.\n" +
+                    "\t  Number of requested threads: " + requestedThreads +
+                    "\n\t  Number of available threads: " + defaultThreads +
+                    "\n\t  Number of threads are set to default instead");
+            FastaHandler.getInstance().numberThreads = defaultThreads;
+        }
+    }
+
+    private static void checkForOutput(CommandLine line, FastaHandler handler) {
+        if (line.hasOption("o")) {
+            handler.generateOutputFiles(line.getOptionValue("o"), line.hasOption("p"));
+            System.out.println("\n-> Program finished generating Output-Files for: " + handler.filename);
+        }
+    }
+
+    private static FastaHandler prepareFastaHandlerObject(CommandLine line) {
+        FastaHandler handler = FastaHandler.getInstance();
+
+        try {
+            handler.generateFastaHandlerObject(line.getOptionValue("i"), line.getOptionValue("s"), line.hasOption("w"));
+            handler.processFastaEntries();
+            if (line.hasOption("v")) {
+                handler.verbosePrinting();
+            } else {
+                System.out.println("-> Finished analyzing Entrys");
+            }
+        } catch (WrongSequenceTypeException | MalformattedFastaFileException wste) {
+            wste.getMessage();
+        }
+        return handler;
     }
 
     /**
@@ -96,51 +147,4 @@ public class Main {
     }
 
 
-    private static void getNumberOfThreads(CommandLine line, int defaultThreads) {
-        int requestedThreads = Integer.parseInt(line.getOptionValue("t"));
-        if (line.hasOption("t") && requestedThreads <= Runtime.getRuntime().availableProcessors()) {
-            FastaHandler.getInstance().numberThreads = requestedThreads;
-        } else {
-            FastaHandler.getInstance().numberThreads = defaultThreads;
-        }
-    }
-
-    private static void checkForOutput(CommandLine line, FastaHandler handler) {
-        if (line.hasOption("o")) {
-            handler.generateOutputFiles(line.getOptionValue("o"), line.hasOption("p"));
-            System.out.println("\n-> Program finished generating Output-Files");
-        }
-    }
-
-    private static FastaHandler prepareFastaHandlerObject(CommandLine line) {
-        FastaHandler handler = FastaHandler.getInstance();
-
-        // Commandline Logic won't allow missing sequence types. When implementing an own logic, you can
-        // use the constructor that won't need any sequence type info.
-        try {
-            handler.generateFastaHandlerObject(line.getOptionValue("i"), line.getOptionValue("s"));
-            handler.processFastaEntries();
-            if (line.hasOption("v")) {
-                handler.verbosePrinting();
-            } else {
-                System.out.println("-> Finished analyzing Entrys");
-            }
-        } catch (WrongSequenceTypeException | MalformattedFastaFileException wste) {
-            wste.getMessage();
-        }
-        return handler;
-    }
-
-    private static CommandLine createCommandLineParser(String[] args, int defaultThreads) throws ParseException {
-        CommandLineParser parser = new DefaultParser();
-        Options options = new Options();
-        options.addOption(Option.builder("o").argName("outpath").hasArg().longOpt("Output-Path").build());
-        options.addOption(Option.builder("i").argName("infile").hasArgs().longOpt("Input-Path").valueSeparator(' ').build());
-        options.addOption(Option.builder("s").argName("sequence_type").hasArgs().longOpt("Sequence-Type").valueSeparator(' ').build());
-        options.addOption(Option.builder("v").argName("verbose").longOpt("Verbose").desc("Make the programm output verbose").build());
-        options.addOption(Option.builder("p").argName("translate").longOpt("Peptide-Translate").desc("Translate Dna/Rna to peptide sequence").type(Integer.class).build());
-        options.addOption(Option.builder("t").argName("threads").hasArg().desc("Number of threads (default: " + defaultThreads + ")").longOpt("Number of Threads").build());
-
-        return parser.parse(options, args);
-    }
 }

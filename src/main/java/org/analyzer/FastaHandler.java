@@ -31,15 +31,15 @@ public class FastaHandler {
         return instance;
     }
 
-    void verbosePrinting(){
-        for (FastaEntry entry : this.fastaObjectList){
-            System.out.println(entry.getSeqID());
-            System.out.println(entry.getSequenceLength());
-            System.out.println(entry.getGcEnrichment());
-            System.out.println(entry.getMeltingPoint());
-            System.out.println(entry.getMolecularWeight());
-            System.out.println(entry.getIsoelectricPoint());
-            System.out.println(entry.getNetCharge());
+    void verbosePrinting() {
+        for (FastaEntry entry : this.fastaObjectList) {
+            System.out.println("-> SequenceID: " + entry.getSeqID().split(">")[1]);
+            System.out.println("\t-> Sequence Length:   " + entry.getSequenceLength());
+            System.out.println("\t-> GC Enrichment:     " + String.format("%.2f", entry.getGcEnrichment() * 100) + " %");
+            System.out.println("\t-> Melting Point:     " + String.format("%.2f", entry.getMeltingPoint()) + " °C");
+            System.out.println("\t-> Molecular Weight:  " + String.format("%.2f", entry.getMolecularWeight()) + " g/mole");
+            System.out.println("\t-> Isoelectric Point: " + String.format("%.2f", entry.getIsoelectricPoint()) + " pH");
+            System.out.println("\t-> Net Charge:        " + String.format("%.2f", entry.getNetCharge()));
         }
     }
 
@@ -67,25 +67,27 @@ public class FastaHandler {
      * Wrapper for the parseFasta() method so it can be used outside the package without direct access rights
      * to the parser logic and calculation setters. Also, the input file gets memorized, so it won't be parsed twice.
      *
-     * @param fasta File to analyze
-     * @param type  Type of the given FastaFile
+     * @param fasta          File to analyze
+     * @param type           Type of the given FastaFile
+     * @param verboseWorkers boolean for verbose Output of worker tasks
      */
-    public void generateFastaHandlerObject(String fasta, String type) throws WrongSequenceTypeException, MalformattedFastaFileException {
+    public void generateFastaHandlerObject(String fasta, String type, boolean verboseWorkers) throws WrongSequenceTypeException, MalformattedFastaFileException {
         this.filename = fasta.split("/")[fasta.split("/").length - 1];
         setSequenceType(type, this.filename);
-        this.parseFasta(fasta);
+        this.parseFasta(fasta, verboseWorkers);
     }
 
     /**
      * Wrapper for the parseFasta() method so it can be used outside the package without direct access rights
      * to the parser logic and calculation setters. Also, the input file gets memorized, so it won't be parsed twice.
      *
-     * @param fasta File to analyze
+     * @param fasta          File to analyze
+     * @param verboseWorkers boolean for verbose Output of worker tasks
      */
-    public void generateFastaHandlerObject(String fasta) throws WrongSequenceTypeException, MalformattedFastaFileException {
+    public void generateFastaHandlerObject(String fasta, boolean verboseWorkers) throws WrongSequenceTypeException, MalformattedFastaFileException {
         this.filename = fasta.split("/")[fasta.split("/").length - 1];
         setSequenceType(null, this.filename);
-        this.parseFasta(fasta);
+        this.parseFasta(fasta, verboseWorkers);
     }
 
     private void setSequenceType(String type, String filename) {
@@ -120,9 +122,10 @@ public class FastaHandler {
     /**
      * Parses the input fasta file and checks for format. Object gets filled here and given input file
      *
-     * @param fasta input file that needs to be checked
+     * @param fasta          input file that needs to be checked
+     * @param verboseWorkers boolean for verbose Output of worker tasks
      */
-    private void parseFasta(String fasta) throws MalformattedFastaFileException, WrongSequenceTypeException {
+    private void parseFasta(String fasta, boolean verboseWorkers) throws MalformattedFastaFileException, WrongSequenceTypeException {
 
         try {
             Scanner fastaReader = new Scanner(new File(fasta));
@@ -148,6 +151,7 @@ public class FastaHandler {
                         throw new MalformattedFastaFileException("Invalid format: Missing sequence for " + sequenceID);
                     }
                     FastaEntry tmpEntry = new FastaEntry(line);
+                    tmpEntry.verboseWorkers = verboseWorkers;
                     entryList.add(tmpEntry);
                     sequenceHandler = new StringBuilder();
                     inHeader = true;
@@ -187,7 +191,7 @@ public class FastaHandler {
      */
     public void generateOutputFiles(String outputDirectory, boolean translate) {
         String outFile = this.filename.split("\\.")[0] + "_analyzed.fasta";
-        if (translate){
+        if (translate) {
             outFile = this.filename.split("\\.")[0] + "_analyzed_translated.fasta";
         }
         try (BufferedWriter writer = new BufferedWriter(new FileWriter(outputDirectory + outFile))) {
