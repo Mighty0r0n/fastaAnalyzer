@@ -60,8 +60,8 @@ public class Main {
     }
 
     private static void getNumberOfThreads(CommandLine line, int defaultThreads) {
-        int requestedThreads = Integer.parseInt(line.getOptionValue("t"));
-        if (line.hasOption("t") && requestedThreads <= Runtime.getRuntime().availableProcessors()) {
+        int requestedThreads = line.hasOption("t") ? Integer.parseInt(line.getOptionValue("t")) : defaultThreads;
+        if (requestedThreads <= Runtime.getRuntime().availableProcessors()) {
             FastaHandler.getInstance().numberThreads = requestedThreads;
         } else {
             System.err.println("-> Thread-Assertion-Error: Requested number of threads exceeds available Processors.\n" +
